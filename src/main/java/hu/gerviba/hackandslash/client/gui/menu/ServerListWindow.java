@@ -6,9 +6,11 @@ import java.util.List;
 import hu.gerviba.hackandslash.client.gui.CustomWindow;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Cursor;
 import javafx.scene.Scene;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.input.ScrollEvent;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
@@ -57,6 +59,7 @@ public class ServerListWindow extends CustomWindow {
         serverList.setAlignment(Pos.CENTER);
         serverList.setPadding(Insets.EMPTY);
         serverList.getStyleClass().add("server-list");
+        serverList.setMinHeight(256);
 
         for (String ip : promotedServers) {
             ServerEntryComponent server = new ServerEntryComponent(ip);

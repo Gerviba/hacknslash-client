@@ -1,25 +1,32 @@
 package hu.gerviba.hackandslash.packets;
 
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+@Data
 @NoArgsConstructor
-@AllArgsConstructor
-@ToString
 public class ChatMessagePacket {
 
+    @AllArgsConstructor
     public static enum MessageType {
-        CHAT,
-        PARTY,
-        CLAN,
-        WHISPER,
-        ANNOUNCEMENT,
-        JOIN,
-        LEAVE,
+        CHAT("white"),
+        PARTY("cyan"),
+        CLAN("white"),
+        WHISPER("silver"),
+        ANNOUNCEMENT("yellow"),
+        JOIN("blue"),
+        LEAVE("gray"),
+        ACTION("green"),
+        WARNING("red"),
+        SERVER("purple")
         ;
+        
+        @Getter
+        private String color;
     }
 
     @Getter

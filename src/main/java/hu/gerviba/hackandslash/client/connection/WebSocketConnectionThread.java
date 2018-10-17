@@ -27,11 +27,14 @@ public class WebSocketConnectionThread extends Thread {
     private String sessionId;
     private Runnable after;
     
+    private IngameWindow ingame;
+    
     private LinkedBlockingQueue<Consumer<StompSession>> eventBus = new LinkedBlockingQueue<>();
     
     public WebSocketConnectionThread(String ip, String sessionId, Runnable after) {
         this.setName("WebsocketConnection");
         this.setDaemon(true);
+        // TODO: Performace improve with lower priority
         this.setUncaughtExceptionHandler((thread, exception) -> {
             log.error("Exception in thread " + thread.getName(), exception);
         });
@@ -57,7 +60,6 @@ public class WebSocketConnectionThread extends Thread {
             after.run();
             
             log.info("Subscribing");
-//            websocket.subscribeChat(stomp);
             
             stomp.subscribe("/topic/chat", new StompFrameHandler() {
 
@@ -68,21 +70,12 @@ public class WebSocketConnectionThread extends Thread {
                 public void handleFrame(StompHeaders stompHeaders, Object o) {
                     log.info("Received " + new String((byte[]) o));
                     Platform.runLater(() -> {
-                        for (int i = 0; i < 9; ++i)
-                            IngameWindow.texts[i].setText(IngameWindow.texts[i + 1].getText());
-                        ObjectMapper mapper = new ObjectMapper();
-                        ChatMessagePacket msg;
-                        try {
-                            msg = mapper.readValue((byte[]) o, ChatMessagePacket.class);
-                            IngameWindow.texts[9].setText(" " + msg.getSender() + ": " + msg.getMessage() + " ");
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+                        ingame.getChatComponent().appendMessage((byte[]) o);
                     });
                 }
             });
             
-            Platform.runLater(() -> new IngameWindow().setThisToCurrentWindow());
+            Platform.runLater(() -> (ingame = new IngameWindow()).setThisToCurrentWindow());
             
             Consumer<StompSession> event;
             while (true)
