@@ -1,22 +1,18 @@
 package hu.gerviba.hackandslash.client.connection;
 
-import java.io.IOException;
 import java.lang.reflect.Type;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 import org.springframework.messaging.simp.stomp.StompFrameHandler;
 import org.springframework.messaging.simp.stomp.StompHeaders;
 import org.springframework.messaging.simp.stomp.StompSession;
 import org.springframework.util.concurrent.ListenableFuture;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import hu.gerviba.hackandslash.client.HacknslashApplication;
 import hu.gerviba.hackandslash.client.gui.ingame.IngameWindow;
-import hu.gerviba.hackandslash.packets.ChatMessagePacket;
+import hu.gerviba.hackandslash.packets.TemplatePacketBuilder;
 import javafx.application.Platform;
 import lombok.extern.slf4j.Slf4j;
 
@@ -68,23 +64,61 @@ public class WebSocketConnectionThread extends Thread {
                 }
 
                 public void handleFrame(StompHeaders stompHeaders, Object o) {
-                    log.info("Received " + new String((byte[]) o));
-                    Platform.runLater(() -> {
-                        ingame.getChatComponent().appendMessage((byte[]) o);
-                    });
+                    log.info("Chat " + new String((byte[]) o));
+                    Platform.runLater(() -> ingame.getChatComponent().appendMessage((byte[]) o));
                 }
+                
+            });
+            
+            stomp.subscribe("/topic/telemetry", new StompFrameHandler() {
+
+                public Type getPayloadType(StompHeaders stompHeaders) {
+                    return byte[].class;
+                }
+
+                public void handleFrame(StompHeaders stompHeaders, Object o) {
+//                    log.info("Telemetry " + new String((byte[]) o));
+                    Platform.runLater(() -> ingame.updateTelemetry((byte[]) o));
+                }
+                
             });
             
             Platform.runLater(() -> (ingame = new IngameWindow()).setThisToCurrentWindow());
             
-            Consumer<StompSession> event;
-            while (true)
-                while ((event = eventBus.poll()) != null)
-                    event.accept(stomp);
+            doPolling(stomp);
+            log.error("Event bus stopped working");
             
         } catch (Exception e) {
             log.error("Error in connection thread", e);
         }
     }
+
+    private void doPolling(StompSession stomp) throws InterruptedException {
+        Consumer<StompSession> event;
+        List<Consumer<StompSession>> burst = new LinkedList<>();
+        while (true) {
+            while ((event = eventBus.poll()) != null)
+                burst.add(event);
+            
+            for (Consumer<StompSession> b : burst)
+                b.accept(stomp);
+            
+            burst.clear();
+            Thread.sleep(25);
+        }
+    }
     
+    private void scheduleNext() {
+        eventBus.add(stomp -> updateTelemetry(stomp));
+    }
+
+    private void updateTelemetry(StompSession session) {
+        session.send("/app/telemetry", TemplatePacketBuilder
+                .buildTelemetry(ingame.getMe()));
+        scheduleNext();
+    }
+
+    public void startTelemetry() {
+        scheduleNext();
+    }
 }

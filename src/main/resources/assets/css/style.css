@@ -1,0 +1,288 @@
+.root {
+	-fx-background-color: #515D74;
+	-fx-fill: #F3F7F0;
+	-fx-border-width: 0;
+}
+
+.header {
+	-fx-background-color: #333D4F;
+}
+
+.footer {
+	-fx-background-color: #333D4F;
+}
+
+.button {
+    -fx-background-insets: 0 0 -2px 0;
+}
+
+.button:focused {
+    -fx-focus-color: transparent; 
+    -fx-background-insets: 0 0 -2px 0;
+}
+
+.login {
+	-fx-background-color: #333D4F;
+	-fx-font: normal 16px 'Roboto Mono Light';
+	-fx-hgap: 20px;
+	-fx-vgap: 10px;
+	-fx-border-color: #28303F;
+	-fx-border-width: 40px 0 4px 0;
+}
+
+.error-box {
+	-fx-padding: 10px 20px;
+	-fx-font: normal 16px 'Roboto Mono Light';
+	-fx-background-color: #E74C3C;
+	-fx-border-color: #C0393B;
+	-fx-border-width: 0 0 0 4px;
+}
+
+.error-box .text {
+	-fx-fill: #FFFFFF;
+}
+
+.login .text {
+	-fx-fill: #FFFFFF;
+	-fx-margin: 10px;
+}
+
+.chat .button,
+.connecting .button,
+.login .button {
+	-fx-background-color: #2980B9;
+	-fx-background-radius: 0;
+	-fx-cursor: hand;
+	-fx-focus-color: transparent;
+	-fx-faint-focus-color: transparent;
+	-fx-text-fill: #FFFFFF;
+}
+
+.chat .button:hover,
+.connecting .button:hover,
+.login .button:hover {
+	-fx-background-color: #3498DB;
+	-fx-background-radius: 0;
+}
+
+.login .text-field {
+	-fx-border-radius: 0;
+	-fx-background-color: #28303F;
+	-fx-background-radius: 0;
+	-fx-text-fill: #FFFFFF;
+	-fx-width: 130px;
+	-fx-highlight-fill: #3498DB;
+	-fx-highlight-text-fill: #FFFFFF;
+}
+
+.game-name {
+	-fx-font: normal 36px 'Roboto Mono Bold';
+	/*-fx-font: normal 72px 'Upheaval TT (BRK)';*/
+	-fx-fill: #FFFFFF;
+}
+
+.server-list-scroll {
+	-fx-focus-color: transparent;
+	-fx-faint-focus-color: transparent;
+	-fx-background-color: #515D74;
+	-fx-border-width: 0;
+}
+
+.server-list-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.server-bg {
+	-fx-opacity: 0.7;
+	-fx-cursor: hand;
+	-fx-border-width: 0 0 0 4px;
+	-fx-border-color: transparent;
+}
+
+.server-bg:hover {
+	-fx-opacity: 1;
+	-fx-border-color: #FFFFFF;
+}
+
+.server-list {
+	-fx-background-color: #515D74;
+	-fx-border-width: 0;
+	-fx-focus-color: transparent;
+	-fx-faint-focus-color: transparent;
+}
+
+.server-list .server-name,
+.server-list .server-usage {
+	-fx-font: normal 20px 'Roboto Mono Bold';
+	-fx-fill: #FFFFFF;
+	-fx-effect: dropshadow(one-pass-box, rgba(0,0,0,0.8), 0, 0, 1, 1);
+}
+
+.server-list .server-motd {
+	-fx-font: normal 20px 'Roboto Mono';
+	-fx-fill: #FFFFFF;
+	-fx-effect: dropshadow(one-pass-box, rgba(0,0,0,0.8), 0, 0, 1, 1);
+}
+
+.connecting .text {
+	-fx-font: normal 20px 'Roboto Mono';
+	-fx-fill: #FFFFFF;
+}
+
+.chat {
+	-fx-background-color: rgba(0,0,0,0.5);
+}
+
+.chat .title {
+	-fx-background-color: rgba(0,0,0,0.6);
+	-fx-padding: 4px;
+}
+
+.chat .title .title-text {
+	-fx-font: normal 16px 'Roboto Mono';
+	-fx-fill: #FFFFFF;
+}
+
+.chat .button {
+}
+
+.chat .text {
+	-fx-font: normal 16px 'Roboto Mono Light';
+	-fx-effect: dropshadow(one-pass-box, rgba(0,0,0,0.8), 0, 0, 1, 1);
+}
+
+.chat .text-field {
+	-fx-font: normal 16px 'Roboto Mono Light';
+	-fx-border-radius: 0;
+	-fx-background-color: rgba(0,0,0,0.6);
+	-fx-background-radius: 0;
+	-fx-text-fill: #FFFFFF;
+	-fx-highlight-fill: #3498DB;
+	-fx-highlight-text-fill: #FFFFFF;
+}
+
+.chat #color-white {
+	-fx-fill: #FFFFFF;
+}
+
+.chat #color-yellow {
+	-fx-fill: #F1C40F;
+}
+
+.chat #color-red {
+	-fx-fill: #E74C3C;
+}
+
+.chat #color-blue {
+	-fx-fill: #3498DB;
+}
+
+.chat #color-purple {
+	-fx-fill: #9B59B6;
+}
+
+.chat #color-gray {
+	-fx-fill: #7F8C8D;
+}
+
+.chat #color-green {
+	-fx-fill: #2ECC71;
+}
+
+.chat #color-cyan {
+	-fx-fill: #1ABC9C;
+}
+
+.chat #color-silver {
+	-fx-fill: #BDC3C7;
+}
+
+.scroll-bar {
+	-fx-background-color: transparent;
+	-fx-background-radius: 0;
+}
+
+.scroll-bar:horizontal .track, 
+.scroll-bar:vertical .track {
+	-fx-background-color: transparent;
+	-fx-border-color: transparent;
+	-fx-background-radius: 0;
+}
+
+.scroll-bar:vertical .track-background, 
+.scroll-bar:horizontal .track-background {
+	-fx-background-color: transparent;
+	-fx-background-insets: 0;
+	-fx-background-radius: 0;
+}
+
+.scroll-bar:horizontal .thumb {
+	-fx-background-color: rgb(211, 211, 211);
+	-fx-background-insets: 4 0 4 0;
+	-fx-background-radius: 0;
+}
+
+.scroll-bar:vertical .thumb {
+	-fx-background-color: rgb(211, 211, 211);
+	-fx-background-insets: 0 4 0 4;
+	-fx-background-radius: 0;
+}
+
+.scroll-bar:horizontal .thumb:hover, 
+.scroll-bar:vertical .thumb:hover {
+	-fx-background-color: rgb(231, 231, 231);
+}
+
+.scroll-bar:horizontal .thumb:pressed, 
+.scroll-bar:vertical .thumb:pressed {
+	-fx-background-color: rgb(255, 255, 255);
+}
+
+.scroll-bar:vertical .increment-button, 
+.scroll-bar:vertical .decrement-button {
+	-fx-background-color: transparent;
+	-fx-background-radius: 0;
+	-fx-padding: 5;
+}
+
+.scroll-bar:horizontal .increment-button, 
+.scroll-bar:horizontal .decrement-button {
+	-fx-background-color: transparent;
+	-fx-background-radius: 0;
+	-fx-padding: 5;
+}
+
+.scroll-bar:horizontal .increment-arrow {
+	-fx-shape: "M 0 0 L 4 8 L 8 0 Z";
+	-fx-background-color: rgb(211, 211, 211);
+	-fx-padding: 0.25em;
+	-fx-rotate: -90;
+}
+
+.scroll-bar:vertical .increment-arrow {
+	-fx-background-color: rgb(211, 211, 211);
+	-fx-shape: "M 0 0 z";
+	-fx-padding: 0.25em;
+	-fx-rotate: 0;
+	-fx-height: 2px;
+}
+
+.scroll-bar:horizontal .decrement-arrow {
+	-fx-background-color: rgb(211, 211, 211);
+	-fx-shape: "M 0 0 L 4 8 L 8 0 Z";
+	-fx-padding: 0.25em;
+	-fx-rotate: 90;
+}
+
+.scroll-bar:vertical .decrement-arrow {
+	-fx-background-color: rgb(211, 211, 211);
+	-fx-shape: "M 0 0 z";
+	-fx-padding: 0.25em;
+	-fx-rotate: -180;
+	-fx-height: 2px;
+}
+
+.scroll-bar:vertical:focused, 
+.scroll-bar:horizontal:focused {
+	-fx-background-color: transparent, rgb(96, 96, 96), rgb(96, 96, 96);
+}

@@ -83,6 +83,7 @@ public class ChatHud implements CustomComponent {
             chat.add(texts[i], 0, i + 1, 2, 1);
         
         TextField chatInput = new TextField();
+        chatInput.setDisable(true);
         chatInput.setOnKeyReleased(event -> {
             if (event.getCode().equals(KeyCode.ENTER)) {
                 HacknslashApplication.getInstance().getConnection().appendTask(stomp -> {
