@@ -55,42 +55,69 @@ public class WebSocketConnectionThread extends Thread {
             log.info("Received session");
             after.run();
             
-            log.info("Subscribing");
-            
-            stomp.subscribe("/topic/chat", new StompFrameHandler() {
-
-                public Type getPayloadType(StompHeaders stompHeaders) {
-                    return byte[].class;
-                }
-
-                public void handleFrame(StompHeaders stompHeaders, Object o) {
-                    log.info("Chat " + new String((byte[]) o));
-                    Platform.runLater(() -> ingame.getChatComponent().appendMessage((byte[]) o));
-                }
-                
-            });
-            
-            stomp.subscribe("/topic/telemetry", new StompFrameHandler() {
-
-                public Type getPayloadType(StompHeaders stompHeaders) {
-                    return byte[].class;
-                }
-
-                public void handleFrame(StompHeaders stompHeaders, Object o) {
-//                    log.info("Telemetry " + new String((byte[]) o));
-                    Platform.runLater(() -> ingame.updateTelemetry((byte[]) o));
-                }
-                
-            });
-            
             Platform.runLater(() -> (ingame = new IngameWindow()).setThisToCurrentWindow());
-            
+
+            log.info("Subscribing");
+            subscribeChat(stomp);
+            subscribeTelemetry(stomp);
+            subscribeMap(stomp);
+
+            log.info("Event bus started");
             doPolling(stomp);
             log.error("Event bus stopped working");
             
         } catch (Exception e) {
             log.error("Error in connection thread", e);
         }
+    }
+
+    private void subscribeMap(StompSession stomp) {
+        stomp.subscribe("/topic/map", new StompFrameHandler() {
+
+            @Override
+            public Type getPayloadType(StompHeaders stompHeaders) {
+                return byte[].class;
+            }
+
+            @Override
+            public void handleFrame(StompHeaders stompHeaders, Object o) {
+                Platform.runLater(() -> ingame.loadMap((byte[]) o));
+            }
+            
+        });
+    }
+    
+    private void subscribeTelemetry(StompSession stomp) {
+        stomp.subscribe("/topic/telemetry", new StompFrameHandler() {
+
+            @Override
+            public Type getPayloadType(StompHeaders stompHeaders) {
+                return byte[].class;
+            }
+
+            @Override
+            public void handleFrame(StompHeaders stompHeaders, Object o) {
+                Platform.runLater(() -> ingame.updateTelemetry((byte[]) o));
+            }
+            
+        });
+    }
+
+    private void subscribeChat(StompSession stomp) {
+        stomp.subscribe("/topic/chat", new StompFrameHandler() {
+
+            @Override
+            public Type getPayloadType(StompHeaders stompHeaders) {
+                return byte[].class;
+            }
+
+            @Override
+            public void handleFrame(StompHeaders stompHeaders, Object o) {
+                log.info("Chat " + new String((byte[]) o));
+                Platform.runLater(() -> ingame.getChatComponent().appendMessage((byte[]) o));
+            }
+            
+        });
     }
 
     private void doPolling(StompSession stomp) throws InterruptedException {

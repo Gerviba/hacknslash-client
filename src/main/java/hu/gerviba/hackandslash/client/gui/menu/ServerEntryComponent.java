@@ -101,6 +101,7 @@ public class ServerEntryComponent implements CustomComponent {
                                 BackgroundRepeat.NO_REPEAT, 
                                 BackgroundPosition.DEFAULT,
                                 BackgroundSize.DEFAULT)));
+                server.applyCss();
             }
         }); 
 

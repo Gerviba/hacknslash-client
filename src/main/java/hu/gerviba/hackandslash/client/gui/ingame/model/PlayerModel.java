@@ -1,12 +1,11 @@
 package hu.gerviba.hackandslash.client.gui.ingame.model;
 
-import java.awt.geom.AffineTransform;
-import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
+import hu.gerviba.hackandslash.client.ImageUtil;
 import hu.gerviba.hackandslash.packets.TelemetryPacket;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.canvas.GraphicsContext;
@@ -14,7 +13,7 @@ import javafx.scene.image.Image;
 import lombok.Data;
 
 @Data
-public class PlayerModel {
+public class PlayerModel implements RenderableEntity {
 
     public static final int[][] TEXTURE_STAND = new int[][] {new int[] {0, 0}, new int[] {1, 0}, new int[] {2, 0}, new int[] {1, 0}};
     public static final int[][] TEXTURE_LEFT = new int[][] {new int[] {0, 1}, new int[] {1, 1}, new int[] {2, 1}, new int[] {1, 1}};
@@ -38,45 +37,44 @@ public class PlayerModel {
     
     private double targetX;
     private double targetY;
+    private int canvasSize;
     
     private Image texture;
     
-    public PlayerModel(long entityId, int scale, String texture) throws IOException {
+    public PlayerModel(long entityId, int scale, String texture, int canvasSize) throws IOException {
         this.entityId = entityId;
         this.scale = scale * 32;
+        this.canvasSize = canvasSize;
 
-        BufferedImage image = ImageIO.read(PlayerModel.class.getResource("/assets/characters/" + texture + ".png"));
-        BufferedImage rescaled = scale(image, image.getType(), scale);
+        BufferedImage image = ImageIO.read(PlayerModel.class
+                .getResource("/assets/characters/" + texture + ".png"));
+        BufferedImage rescaled = ImageUtil.scale(image, image.getType(), scale);
         
         this.texture = SwingFXUtils.toFXImage(rescaled, null);
     }
     
-    public void draw(GraphicsContext gc, double time) {
+    @Override
+    public void draw(GraphicsContext gc, double time, double dX, double dY) {
         int state = (int) (((long) (time * 6)) % 4);
         gc.drawImage(texture, 
                 scale * PLAYER_TEXTURE[direction][(walking ? state : 1)][0], 
                 scale * PLAYER_TEXTURE[direction][(walking ? state : 1)][1], 
-                scale, scale, x, y, scale, scale);
+                scale, scale, 
+                this.x - dX  + (canvasSize/2), 
+                this.y - dY  + (canvasSize/2), 
+                scale, scale);
     }
-    
-    private static double EPSILON = 2;
     
     public void update(TelemetryPacket.PlayerModelStatus pms) {
         this.targetX = (long) pms.getX();
         this.targetY = (long) pms.getY();
-        
-//        if (Math.abs(this.targetX - this.x) < EPSILON)
-//            this.x = this.targetX;
-//        if (Math.abs(this.targetY - this.y) < EPSILON)
-//            this.y = this.targetY;
-                    
         this.direction = pms.getDirection();
         this.walking = pms.isWalking();
     }
-    
+
+    @Override
     public void calc() {
         if (this.x != this.targetX || this.y != this.targetY) {
-            double speed = 1.8;
             double dX = Math.abs(this.targetX - this.x);
             double dY = Math.abs(this.targetY - this.y);
             double c = Math.sqrt(dX*dX + dY*dY);
@@ -93,16 +91,6 @@ public class PlayerModel {
     public void setY(double y) {
         this.y = y;
         this.targetY = y;
-    }
-    
-    public static BufferedImage scale(BufferedImage before, int imageType, int scale) {
-        int w = before.getWidth();
-        int h = before.getHeight();
-        BufferedImage after = new BufferedImage(w * scale, h * scale, BufferedImage.TYPE_INT_ARGB);
-        AffineTransform at = new AffineTransform();
-        at.scale(scale, scale);
-        AffineTransformOp scaleOp =  new AffineTransformOp(at, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
-        return scaleOp.filter(before, after);
     }
     
 }

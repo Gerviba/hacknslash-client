@@ -24,7 +24,10 @@ import javafx.scene.text.Text;
 public class ChatHud implements CustomComponent {
 
     private ObjectMapper mapper = new ObjectMapper();
-
+    
+    private TextField chatInput;
+    private Button sendMessage;
+    
     private Text[] texts = new Text[]{
             newText(), newText(), newText(), newText(), newText(),
             newText(), newText(), newText(), newText(), newText()
@@ -81,16 +84,24 @@ public class ChatHud implements CustomComponent {
         chat.add(title, 0, 0, 2, 1);
         for (int i = 0; i < 10; ++i)
             chat.add(texts[i], 0, i + 1, 2, 1);
+//        title.setVisible(false);
         
-        TextField chatInput = new TextField();
+        chatInput = new TextField();
         chatInput.setDisable(true);
         chatInput.setOnKeyReleased(event -> {
             if (event.getCode().equals(KeyCode.ENTER)) {
                 HacknslashApplication.getInstance().getConnection().appendTask(stomp -> {
                     try {
-                        stomp.send("/app/chat", TemplatePacketBuilder.buildChatMessage(MessageType.CHAT,
-                                HacknslashApplication.getInstance().getUser().getName(), null, chatInput.getText()));
-                        Platform.runLater(() -> chatInput.setText(""));
+                        if (chatInput.getText().length() > 0)
+                            stomp.send("/app/chat", TemplatePacketBuilder.buildChatMessage(MessageType.CHAT,
+                                    HacknslashApplication.getInstance().getUser().getName(), 
+                                    null, chatInput.getText()));
+                        
+                        Platform.runLater(() -> {
+                            chatInput.setDisable(true);
+                            sendMessage.setDisable(true);
+                            chatInput.setText("");
+                        });
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -99,13 +110,21 @@ public class ChatHud implements CustomComponent {
         });
         
         chat.add(chatInput, 0, 11, 1, 2);
-        Button sendMessage = new Button(">");
+        sendMessage = new Button(">");
+        sendMessage.setDisable(true);
         sendMessage.setOnMouseClicked(event -> {
             HacknslashApplication.getInstance().getConnection().appendTask(stomp -> {
                 try {
-                    stomp.send("/app/chat", TemplatePacketBuilder.buildChatMessage(MessageType.CHAT,
-                            HacknslashApplication.getInstance().getUser().getName(), null, chatInput.getText()));
-                    Platform.runLater(() -> chatInput.setText(""));
+                    if (chatInput.getText().length() > 0)
+                        stomp.send("/app/chat", TemplatePacketBuilder.buildChatMessage(MessageType.CHAT,
+                            HacknslashApplication.getInstance().getUser().getName(), 
+                            null, chatInput.getText()));
+                    
+                    Platform.runLater(() -> {
+                        chatInput.setDisable(true);
+                        sendMessage.setDisable(true);
+                        chatInput.setText("");
+                    });
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -113,6 +132,11 @@ public class ChatHud implements CustomComponent {
         });
         chat.add(sendMessage, 1, 11);
         return chatWrapper;
+    }
+
+    public void allow() {
+        chatInput.setDisable(false);
+        sendMessage.setDisable(false);
     }
     
 }
