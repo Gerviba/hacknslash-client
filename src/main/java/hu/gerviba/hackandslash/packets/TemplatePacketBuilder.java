@@ -15,5 +15,10 @@ public class TemplatePacketBuilder {
                 player.getX(), player.getY(), player.getDirection(), player.isWalking() ? "true" : "false")
                 .getBytes();
     }
+
+    public static byte[] buildJustConnected(int height, int width, int scale) {
+        return String.format("{\"height\":%d,\"width\":%d,\"scale\":%d}", 
+                height, width, scale).getBytes();
+    }
     
 }

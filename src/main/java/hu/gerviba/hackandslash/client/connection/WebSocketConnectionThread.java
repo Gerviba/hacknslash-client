@@ -59,9 +59,12 @@ public class WebSocketConnectionThread extends Thread {
 
             log.info("Subscribing");
             subscribeChat(stomp);
+            subscribePrivateChat(stomp);
             subscribeTelemetry(stomp);
             subscribeMap(stomp);
 
+            sendJustConnected();
+            
             log.info("Event bus started");
             doPolling(stomp);
             log.error("Event bus stopped working");
@@ -71,8 +74,15 @@ public class WebSocketConnectionThread extends Thread {
         }
     }
 
+    private void sendJustConnected() {
+        eventBus.add(stomp -> {
+            stomp.send("/app/connected", TemplatePacketBuilder
+                    .buildJustConnected(800, 1280, 2));
+        });
+    }
+
     private void subscribeMap(StompSession stomp) {
-        stomp.subscribe("/topic/map", new StompFrameHandler() {
+        stomp.subscribe("/user/topic/map", new StompFrameHandler() {
 
             @Override
             public Type getPayloadType(StompHeaders stompHeaders) {
@@ -88,7 +98,7 @@ public class WebSocketConnectionThread extends Thread {
     }
     
     private void subscribeTelemetry(StompSession stomp) {
-        stomp.subscribe("/topic/telemetry", new StompFrameHandler() {
+        stomp.subscribe("/user/topic/telemetry", new StompFrameHandler() {
 
             @Override
             public Type getPayloadType(StompHeaders stompHeaders) {
@@ -114,6 +124,23 @@ public class WebSocketConnectionThread extends Thread {
             @Override
             public void handleFrame(StompHeaders stompHeaders, Object o) {
                 log.info("Chat " + new String((byte[]) o));
+                Platform.runLater(() -> ingame.getChatComponent().appendMessage((byte[]) o));
+            }
+            
+        });
+    }
+    
+    private void subscribePrivateChat(StompSession stomp) {
+        stomp.subscribe("/user/topic/chat", new StompFrameHandler() {
+
+            @Override
+            public Type getPayloadType(StompHeaders stompHeaders) {
+                return byte[].class;
+            }
+
+            @Override
+            public void handleFrame(StompHeaders stompHeaders, Object o) {
+                log.info("Private chat " + new String((byte[]) o));
                 Platform.runLater(() -> ingame.getChatComponent().appendMessage((byte[]) o));
             }
             

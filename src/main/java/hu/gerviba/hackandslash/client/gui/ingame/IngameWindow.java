@@ -29,7 +29,6 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
@@ -47,6 +46,9 @@ public class IngameWindow extends CustomWindow {
     private ChatHud chatComponent;
     
     @Getter
+    private PlayerInfoHud playerInfoComponent;
+    
+    @Getter
     private Map<Long, PlayerModel> playerModel;
 
     @Getter
@@ -56,6 +58,11 @@ public class IngameWindow extends CustomWindow {
     private StaticLayer background = null;
     private Canvas canvasForeground;
     private StaticLayer foreground = null;
+    
+    private int height;
+    private int width;
+    private int scale;
+    private int scaleInPixel;
     
     public void updateTelemetry(byte[] o) {
         TelemetryPacket telemetry;
@@ -67,7 +74,8 @@ public class IngameWindow extends CustomWindow {
                     if (playerModel.containsKey(pms.getEntityId())) {
                         playerModel.get(pms.getEntityId()).update(pms);
                     } else {
-                        PlayerModel player = new PlayerModel(pms.getEntityId(), 2, "player_no1", 512);
+                        PlayerModel player = new PlayerModel(pms.getEntityId(), scale, 
+                                "player_no1", width, height);
                         player.update(pms);
                         player.setX(pms.getX());
                         player.setY(pms.getY());
@@ -92,16 +100,10 @@ public class IngameWindow extends CustomWindow {
      * - Play Area layer
      * - Background layer
      * 
-     * Chat:
-     * - Mode: Global
-     * - Mode: Map
-     * - Mode: Others
-     * - Colored texts
-     * - Send message
-     * 
      * Player HUD:
      * - HP
      * - Mana
+     * - Exp
      * - HP Potion count
      * 
      * Inventory:
@@ -114,35 +116,38 @@ public class IngameWindow extends CustomWindow {
      */
     @Override
     protected void init() {
+        height = 800;
+        width = 1280;
+        scale = 2;
+        scaleInPixel = scale * 32;
         playerModel = new ConcurrentHashMap<>();
         
         AnchorPane body = new AnchorPane();
-        body.setMinHeight(600);
+        body.setMinWidth(width);
+        body.setMinHeight(height);
         StackPane ingame = new StackPane();
+        ingame.setMinWidth(width);
+        ingame.setMinHeight(height);
         body.getChildren().add(ingame);
         AnchorPane.setTopAnchor(ingame, 0.0);
         AnchorPane.setRightAnchor(ingame, 0.0);
         AnchorPane.setBottomAnchor(ingame, 0.0);
         AnchorPane.setLeftAnchor(ingame, 0.0);
-
-        Image image = new Image("testbg-3.png");
-        ImageView layerFarBackground = new ImageView();
-        layerFarBackground.setImage(image);
-        layerFarBackground.setSmooth(false);
-        layerFarBackground.setScaleY(10);
-        ingame.getChildren().add(layerFarBackground);
         
-        canvasBackground = new Canvas(512, 512);
+        canvasBackground = new Canvas(width, height);
         ingame.getChildren().add(canvasBackground);
-        Canvas canvasMiddle = new Canvas(512, 512);
+        Canvas canvasMiddle = new Canvas(width, height);
         ingame.getChildren().add(canvasMiddle);
-        canvasForeground = new Canvas(512, 512);
+        canvasForeground = new Canvas(width, height);
         ingame.getChildren().add(canvasForeground);
         
         Set<String> input = new HashSet<>();
         
         initScene(body);
 
+        playerInfoComponent = new PlayerInfoHud();
+        ingame.getChildren().add(playerInfoComponent.toPane());
+        
         scene.setOnKeyPressed(e -> {
             String code = e.getCode().toString();
             input.add(code);
@@ -155,7 +160,8 @@ public class IngameWindow extends CustomWindow {
         
         try {
             GraphicsContext layerMiddle = canvasMiddle.getGraphicsContext2D();
-            playerModel.put(PLAYER_ENTITY_ID, new PlayerModel(PLAYER_ENTITY_ID, 2, "player_no1", 512));
+            playerModel.put(PLAYER_ENTITY_ID, 
+                    new PlayerModel(PLAYER_ENTITY_ID, scale, "player_no1", width, height));
             
             long startNanoTime = System.nanoTime();
             new AnimationTimer() {
@@ -200,8 +206,11 @@ public class IngameWindow extends CustomWindow {
                         background.draw(me.getX(), me.getY());
                     if (foreground != null)
                         foreground.draw(me.getX(), me.getY());
+                    playerInfoComponent.updateMapCanvas(
+                            me.getX() / scaleInPixel, 
+                            me.getY() / scaleInPixel);
                     
-                    layerMiddle.clearRect(0, 0, 512, 512);
+                    layerMiddle.clearRect(0, 0, width, height);
                     entities.stream()
                             .filter(pm -> pm != null)
                             .sorted((a, b) -> Double.compare(a.getY(), b.getY()))
@@ -224,8 +233,8 @@ public class IngameWindow extends CustomWindow {
         scene = new Scene(body);
         scene.getStylesheets().add(getClass().getResource("/assets/css/style.css").toExternalForm());
         stage.setTitle("Hack'n'Slash");
-        stage.setMinHeight(600);
-        stage.setMinWidth(820);
+        stage.setMinHeight(height);
+        stage.setMinWidth(width);
     }
 
     public PlayerModel getMe() {
@@ -237,15 +246,19 @@ public class IngameWindow extends CustomWindow {
             MapLoadPacket packet = mapper.readValue(o, MapLoadPacket.class);
             BufferedImage image = ImageIO.read(PlayerModel.class
                     .getResource("/assets/textures/" + packet.getTexture() + ".png"));
-            BufferedImage rescaled = ImageUtil.scale(image, image.getType(), 2);
+            BufferedImage rescaled = ImageUtil.scale(image, image.getType(), scale);
             Image texture = SwingFXUtils.toFXImage(rescaled, null);
             
             background = new StaticLayer(canvasBackground.getGraphicsContext2D(), 
-                    packet.getBackground(), texture, 64, 512, 
-                    packet.getSpawnX(), packet.getSpawnY());
+                    packet.getBackground(), texture, 64, width, height, 
+                    0, 0);
+            scene.getRoot().setStyle("-fx-background-color: #" + packet.getBackgroundColor());
+            getMe().setX(packet.getSpawnX() * scaleInPixel);
+            getMe().setY(packet.getSpawnY() * scaleInPixel);
             foreground = new StaticLayer(canvasForeground.getGraphicsContext2D(), 
-                    packet.getForeground(), texture, 64, 512, 
-                    packet.getSpawnX(), packet.getSpawnY());
+                    packet.getForeground(), texture, 64, width, height, 
+                    0, 0);
+            playerInfoComponent.renderMapCanvas(packet.getBackground());
             log.info("Map loaded");
         } catch (Exception e) {
             log.error("Failed to load map", e);

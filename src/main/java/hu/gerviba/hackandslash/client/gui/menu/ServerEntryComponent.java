@@ -8,6 +8,7 @@ import org.springframework.web.client.RestTemplate;
 import hu.gerviba.hackandslash.client.HacknslashApplication;
 import hu.gerviba.hackandslash.client.gui.CustomComponent;
 import hu.gerviba.hacknslash.client.auth.pojo.ServerListInfoResponse;
+import javafx.application.Platform;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.scene.image.Image;
@@ -48,10 +49,6 @@ public class ServerEntryComponent implements CustomComponent {
         server.setMinWidth(500);
         server.setMinWidth(800);
         server.setPrefWidth(780);
-        //TODO: Add default background (color?)
-        server.setBackground(new Background(new BackgroundImage(new Image("/testbg-3.png", 800, 128, true, true),
-                BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT,
-                BackgroundSize.DEFAULT)));
         server.getStyleClass().add("server-bg");
         
         ColumnConstraints col1 = new ColumnConstraints();
@@ -74,7 +71,7 @@ public class ServerEntryComponent implements CustomComponent {
         serverUsage.setTextAlignment(TextAlignment.RIGHT);
         server.add(serverUsage, 1, 0);
         
-        HacknslashApplication.ASYNC.execute(() -> {
+        Platform.runLater(() -> {
             response = null;
             try {
                 response = restTemplate.getForObject(ip + "/api/connect/info",
@@ -87,7 +84,7 @@ public class ServerEntryComponent implements CustomComponent {
             }
             
             if (response != null) {
-                log.info(response.toString());
+                log.info("Loaded server: " + response.getName());
                 serverName.setText(response.getName());
                 serverMotd.setText(response.getMotd());
                 serverUsage.setText(response.getUsers() + "/" + response.getMaxUsers());
@@ -102,6 +99,7 @@ public class ServerEntryComponent implements CustomComponent {
                                 BackgroundPosition.DEFAULT,
                                 BackgroundSize.DEFAULT)));
                 server.applyCss();
+                server.layout();
             }
         }); 
 

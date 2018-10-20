@@ -25,8 +25,11 @@ public class ChatHud implements CustomComponent {
 
     private ObjectMapper mapper = new ObjectMapper();
     
+    private AnchorPane chatWrapper;
     private TextField chatInput;
     private Button sendMessage;
+    private GridPane title;
+    private Text titleText;
     
     private Text[] texts = new Text[]{
             newText(), newText(), newText(), newText(), newText(),
@@ -57,7 +60,7 @@ public class ChatHud implements CustomComponent {
     
     @Override
     public Pane toPane() {
-        AnchorPane chatWrapper = new AnchorPane();
+        chatWrapper = new AnchorPane();
         GridPane chat = new GridPane();
         chat.getStyleClass().add("chat");
         chat.setMinHeight(200);
@@ -74,10 +77,11 @@ public class ChatHud implements CustomComponent {
         col2.setHalignment(HPos.RIGHT);
         chat.getColumnConstraints().addAll(col1, col2);
         
-        GridPane title = new GridPane();
+        title = new GridPane();
         title.minWidth(300);
         title.maxWidth(500);
-        Text titleText = new Text(" CHAT | Channel: global");
+        title.setVisible(false);
+        titleText = new Text(" CHAT | Channel: global");
         titleText.getStyleClass().add("title-text");
         title.add(titleText, 0, 0);
         title.getStyleClass().add("title");
@@ -100,7 +104,9 @@ public class ChatHud implements CustomComponent {
                         Platform.runLater(() -> {
                             chatInput.setDisable(true);
                             sendMessage.setDisable(true);
+                            title.setVisible(false);
                             chatInput.setText("");
+                            chatWrapper.getStyleClass().clear();
                         });
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -123,7 +129,9 @@ public class ChatHud implements CustomComponent {
                     Platform.runLater(() -> {
                         chatInput.setDisable(true);
                         sendMessage.setDisable(true);
+                        title.setVisible(false);
                         chatInput.setText("");
+                        chatWrapper.getStyleClass().clear();
                     });
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -137,6 +145,9 @@ public class ChatHud implements CustomComponent {
     public void allow() {
         chatInput.setDisable(false);
         sendMessage.setDisable(false);
+        title.setVisible(true);
+        chatWrapper.getStyleClass().add("allowed");
+        Math.sin(1.0);
     }
     
 }

@@ -10,7 +10,6 @@ import hu.gerviba.hacknslash.client.auth.pojo.UserRepresentation;
 import javafx.application.Application;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -39,9 +38,8 @@ public class HacknslashApplication extends Application {
     @Override
     public void start(Stage stage) {
         this.stage = stage;
-        stage.initStyle(StageStyle.UTILITY);
+//        stage.initStyle(StageStyle.UTILITY);
         
-        Font.loadFont(HacknslashApplication.class.getResource("/assets/fonts/upheavtt.ttf").toExternalForm(), 72);
         Font.loadFont(HacknslashApplication.class.getResource("/assets/fonts/RobotoMono-Regular.ttf").toExternalForm(), 16);
         Font.loadFont(HacknslashApplication.class.getResource("/assets/fonts/RobotoMono-Light.ttf").toExternalForm(), 16);
         Font.loadFont(HacknslashApplication.class.getResource("/assets/fonts/RobotoMono-Bold.ttf").toExternalForm(), 20);

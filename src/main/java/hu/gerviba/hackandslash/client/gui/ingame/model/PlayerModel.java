@@ -37,14 +37,16 @@ public class PlayerModel implements RenderableEntity {
     
     private double targetX;
     private double targetY;
-    private int canvasSize;
+    private int height;
+    private int width;
     
     private Image texture;
     
-    public PlayerModel(long entityId, int scale, String texture, int canvasSize) throws IOException {
+    public PlayerModel(long entityId, int scale, String texture, int width, int height) throws IOException {
         this.entityId = entityId;
         this.scale = scale * 32;
-        this.canvasSize = canvasSize;
+        this.width = width;
+        this.height = height;
 
         BufferedImage image = ImageIO.read(PlayerModel.class
                 .getResource("/assets/characters/" + texture + ".png"));
@@ -60,14 +62,18 @@ public class PlayerModel implements RenderableEntity {
                 scale * PLAYER_TEXTURE[direction][(walking ? state : 1)][0], 
                 scale * PLAYER_TEXTURE[direction][(walking ? state : 1)][1], 
                 scale, scale, 
-                this.x - dX  + (canvasSize/2), 
-                this.y - dY  + (canvasSize/2), 
+                this.x - dX  + (width / 2), 
+                this.y - dY  + (height / 2), 
                 scale, scale);
     }
     
     public void update(TelemetryPacket.PlayerModelStatus pms) {
         this.targetX = (long) pms.getX();
+        if (Math.abs(this.targetX - this.x) > 10)
+            this.x = this.targetX;
         this.targetY = (long) pms.getY();
+        if (Math.abs(this.targetY - this.y) > 10)
+            this.y = this.targetY;
         this.direction = pms.getDirection();
         this.walking = pms.isWalking();
     }

@@ -56,8 +56,9 @@ public class ServerListWindow extends CustomWindow {
         serverList = new GridPane();
         serverList.setAlignment(Pos.CENTER);
         serverList.setPadding(Insets.EMPTY);
+        serverList.setVgap(40);
         serverList.getStyleClass().add("server-list");
-        serverList.setMinHeight(256);
+        serverList.setMinHeight(108 + (promotedServers.length * 168));
 
         for (String ip : promotedServers) {
             ServerEntryComponent server = new ServerEntryComponent(ip);

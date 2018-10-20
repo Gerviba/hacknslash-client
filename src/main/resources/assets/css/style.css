@@ -47,7 +47,6 @@
 	-fx-margin: 10px;
 }
 
-.chat .button,
 .connecting .button,
 .login .button {
 	-fx-background-color: #2980B9;
@@ -58,7 +57,6 @@
 	-fx-text-fill: #FFFFFF;
 }
 
-.chat .button:hover,
 .connecting .button:hover,
 .login .button:hover {
 	-fx-background-color: #3498DB;
@@ -97,6 +95,7 @@
 	-fx-cursor: hand;
 	-fx-border-width: 0 0 0 4px;
 	-fx-border-color: transparent;
+	/*-fx-background-color: #333D4F;*/
 }
 
 .server-bg:hover {
@@ -130,6 +129,10 @@
 }
 
 .chat {
+	-fx-background-color: rgba(0,0,0,0);
+}
+
+.allowed .chat {
 	-fx-background-color: rgba(0,0,0,0.5);
 }
 
@@ -144,6 +147,17 @@
 }
 
 .chat .button {
+	-fx-background-color: rgba(0,0,0,0.6);
+	-fx-background-radius: 0;
+	-fx-cursor: hand;
+	-fx-focus-color: transparent;
+	-fx-faint-focus-color: transparent;
+	-fx-text-fill: #FFFFFF;
+}
+
+.chat .button:hover {
+	-fx-background-color: rgba(0,0,0,0.8);
+	-fx-background-radius: 0;
 }
 
 .chat .text {
@@ -195,6 +209,68 @@
 
 .chat #color-silver {
 	-fx-fill: #BDC3C7;
+}
+
+.hud .map {
+	-fx-background-color: rgba(0,0,0,0.3);
+}
+
+.hud .player-name {
+	-fx-font: normal 16px 'Roboto Mono Light';
+	-fx-fill: #FFFFFF;
+}
+
+.hud .progress-bar {
+    -fx-indeterminate-bar-length: 60;
+    -fx-indeterminate-bar-escape: true;
+    -fx-indeterminate-bar-flip: true;
+    -fx-indeterminate-bar-animation-time: 2;
+}
+
+.hud .text {
+	-fx-font: normal 12px 'Roboto Mono Light';
+	-fx-fill: #FFFFFF;
+	-fx-effect: dropshadow(one-pass-box, rgba(0,0,0,1), 0, 0, 1, 1);
+}
+
+.hud .progress-bar.hp > .bar {
+    -fx-background-color: #bc3a18;
+    -fx-border-width: 0 2px 0 0;
+    -fx-border-color: #9a2f14;
+    -fx-border-insets: 4px;
+    -fx-background-insets: 4;
+    -fx-background-radius: 0;
+    -fx-padding: 5px;
+}
+
+.hud .progress-bar.mana > .bar {
+    -fx-background-color: #018df7;
+    -fx-border-width: 0 2px 0 0;
+    -fx-border-color: #0173ca;
+    -fx-border-insets: 4px;
+    -fx-background-insets: 4;
+    -fx-background-radius: 0;
+    -fx-padding: 5px;
+}
+
+.hud .progress-bar.exp > .bar {
+    -fx-background-color: #fdf26e;
+    -fx-border-width: 0 2px 0 0;
+    -fx-border-color: #cfc65a;
+    -fx-border-insets: 4px;
+    -fx-background-insets: 4;
+    -fx-background-radius: 0;
+    -fx-padding: 5px;
+}
+
+.hud .progress-bar:indeterminate > .bar {
+    -fx-background-color: linear-gradient(to left, transparent, -fx-accent);
+}
+
+.hud .progress-bar > .track {
+	-fx-background-color: rgba(0,0,0,0.3);
+    -fx-background-insets: 0, 0 0 1 0, 1 1 2 1;
+    -fx-background-radius: 0, 0, 0, 0;
 }
 
 .scroll-bar {
