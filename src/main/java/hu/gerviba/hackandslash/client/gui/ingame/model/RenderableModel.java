@@ -2,7 +2,7 @@ package hu.gerviba.hackandslash.client.gui.ingame.model;
 
 import javafx.scene.canvas.GraphicsContext;
 
-public interface RenderableEntity {
+public interface RenderableModel {
 
     public double getY();
 

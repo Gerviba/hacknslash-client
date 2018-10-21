@@ -5,7 +5,7 @@ import javafx.scene.image.Image;
 import lombok.Data;
 
 @Data
-public class MiddleModel implements RenderableEntity {
+public class MiddleModel implements RenderableModel {
 
     private final double dX;
     private final double dY;

@@ -14,7 +14,7 @@ import javafx.scene.paint.Color;
 import lombok.Data;
 
 @Data
-public class PlayerModel implements RenderableEntity {
+public class PlayerModel implements RenderableModel {
 
     public static final int[][] TEXTURE_STAND = new int[][] {
         new int[] {0, 0}, 

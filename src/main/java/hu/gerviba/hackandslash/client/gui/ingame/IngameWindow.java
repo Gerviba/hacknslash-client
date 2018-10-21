@@ -20,7 +20,7 @@ import hu.gerviba.hackandslash.client.ImageUtil;
 import hu.gerviba.hackandslash.client.gui.CustomWindow;
 import hu.gerviba.hackandslash.client.gui.ingame.model.MiddleModel;
 import hu.gerviba.hackandslash.client.gui.ingame.model.PlayerModel;
-import hu.gerviba.hackandslash.client.gui.ingame.model.RenderableEntity;
+import hu.gerviba.hackandslash.client.gui.ingame.model.RenderableModel;
 import hu.gerviba.hackandslash.client.gui.ingame.model.StaticLayer;
 import hu.gerviba.hackandslash.client.packets.MapLoadPacket;
 import hu.gerviba.hackandslash.client.packets.TelemetryPacket;
@@ -56,10 +56,11 @@ public class IngameWindow extends CustomWindow {
     private Map<Long, PlayerModel> playerModel;
 
     @Getter
-    private List<RenderableEntity> entities = Collections.synchronizedList(new LinkedList<>());
+    private List<RenderableModel> entities = Collections.synchronizedList(new LinkedList<>());
     
     private Canvas canvasBackground;
     private StaticLayer background = null;
+    private Canvas canvasMiddle;
     private Canvas canvasForeground;
     private StaticLayer foreground = null;
     private Canvas playerNames;
@@ -69,6 +70,10 @@ public class IngameWindow extends CustomWindow {
     private int scale;
     private int scaleInPixel;
     
+    AnimationTimer animationTimer;
+    
+    Set<String> input = new HashSet<>();
+
     /**
      * Ingame:
      * - Window hint layer
@@ -96,36 +101,11 @@ public class IngameWindow extends CustomWindow {
      */
     @Override
     protected void init() {
-        height = 800;
-        width = 1280;
-        scale = 2;
-        scaleInPixel = scale * 32;
-        playerModel = new ConcurrentHashMap<>();
+        initVars();
         
-        AnchorPane body = new AnchorPane();
-        body.setMinWidth(width);
-        body.setMinHeight(height);
-        StackPane ingame = new StackPane();
-        ingame.setMinWidth(width);
-        ingame.setMinHeight(height);
-        body.getChildren().add(ingame);
-        AnchorPane.setTopAnchor(ingame, 0.0);
-        AnchorPane.setRightAnchor(ingame, 0.0);
-        AnchorPane.setBottomAnchor(ingame, 0.0);
-        AnchorPane.setLeftAnchor(ingame, 0.0);
-        
-        canvasBackground = new Canvas(width, height);
-        ingame.getChildren().add(canvasBackground);
-        Canvas canvasMiddle = new Canvas(width, height);
-        ingame.getChildren().add(canvasMiddle);
-        canvasForeground = new Canvas(width, height);
-        ingame.getChildren().add(canvasForeground);
-        playerNames = new Canvas(width, height);
-        ingame.getChildren().add(playerNames);
-        playerNames.getGraphicsContext2D().setTextAlign(TextAlignment.CENTER);
-        playerNames.getGraphicsContext2D().setFont(new Font("Roboto Mono Bold", 12));
-        
-        Set<String> input = new HashSet<>();
+        AnchorPane body = initBody();
+        StackPane ingame = initIngame(body);
+        initLayers(ingame);
         
         initScene(body);
 
@@ -142,49 +122,28 @@ public class IngameWindow extends CustomWindow {
             input.remove(code);
         });
         
+        startAnimationLoop();
+        
+        chatComponent = new ChatHud();
+        ingame.getChildren().add(chatComponent.toPane());
+        
+        HacknslashApplication.getInstance().getConnection().startTelemetry();
+    }
+
+    private void startAnimationLoop() {
         try {
             GraphicsContext layerMiddle = canvasMiddle.getGraphicsContext2D();
             playerModel.put(PLAYER_ENTITY_ID, 
                     new PlayerModel(PLAYER_ENTITY_ID, "null", scale, "player_no1", width, height));
             
             long startNanoTime = System.nanoTime();
-            new AnimationTimer() {
+            animationTimer = new AnimationTimer() {
                 public void handle(long currentNanoTime) {
                     double t = (currentNanoTime - startNanoTime) / 1000000000.0;
                     
                     PlayerModel me = playerModel.get(PLAYER_ENTITY_ID);
 
-                    double dX = me.getX();
-                    double dY = me.getY();
-                    int direction = me.getDirection();
-                    boolean walking = false;
-                    if (input.contains("LEFT")) {
-                        dX -= 1;
-                        direction = 1;
-                        walking = true;
-                    }
-                    if (input.contains("RIGHT")) {
-                        dX += 1;
-                        direction = 2;
-                        walking = true;
-                    }
-                    if (input.contains("UP")) {
-                        dY -= 1;
-                        direction = 3;
-                        walking = true;
-                    }
-                    if (input.contains("DOWN")) {
-                        dY += 1;
-                        direction = 0;
-                        walking = true;
-                    }
-                    if (input.contains("T")) {
-                        chatComponent.allow();
-                    }
-                    me.setX(dX);
-                    me.setY(dY);
-                    me.setDirection(direction);
-                    me.setWalking(walking);
+                    applyInput(me);
 
                     if (background != null)
                         background.draw(me.getX(), me.getY());
@@ -206,14 +165,91 @@ public class IngameWindow extends CustomWindow {
                                 entity.draw(layerMiddle, topLayer, t, me.getX(), me.getY());
                             });
                 }
-            }.start();
+
+            };
+            animationTimer.start();
         } catch (Exception e) {
             e.printStackTrace();
         }
-        chatComponent = new ChatHud();
-        ingame.getChildren().add(chatComponent.toPane());
+    }
+
+    private void initVars() {
+        height = 800;
+        width = 1280;
+        scale = 2;
+        scaleInPixel = scale * 32;
+        playerModel = new ConcurrentHashMap<>();
+    }
+
+    private AnchorPane initBody() {
+        AnchorPane body = new AnchorPane();
+        body.setMinWidth(width);
+        body.setMinHeight(height);
+        return body;
+    }
+
+    private StackPane initIngame(AnchorPane body) {
+        StackPane ingame = new StackPane();
+        ingame.setMinWidth(width);
+        ingame.setMinHeight(height);
+        body.getChildren().add(ingame);
+        AnchorPane.setTopAnchor(ingame, 0.0);
+        AnchorPane.setRightAnchor(ingame, 0.0);
+        AnchorPane.setBottomAnchor(ingame, 0.0);
+        AnchorPane.setLeftAnchor(ingame, 0.0);
+        return ingame;
+    }
+
+    private void initLayers(StackPane ingame) {
+        canvasBackground = new Canvas(width, height);
+        ingame.getChildren().add(canvasBackground);
         
-        HacknslashApplication.getInstance().getConnection().startTelemetry();
+        canvasMiddle = new Canvas(width, height);
+        ingame.getChildren().add(canvasMiddle);
+        
+        canvasForeground = new Canvas(width, height);
+        ingame.getChildren().add(canvasForeground);
+        
+        playerNames = new Canvas(width, height);
+        ingame.getChildren().add(playerNames);
+        playerNames.getGraphicsContext2D().setTextAlign(TextAlignment.CENTER);
+        playerNames.getGraphicsContext2D().setFont(new Font("Roboto Mono Bold", 12));
+    }
+
+    private void applyInput(PlayerModel me) {
+        double dX = me.getX();
+        double dY = me.getY();
+        int direction = me.getDirection();
+        boolean walking = false;
+        
+        if (input.contains("LEFT")) {
+            dX -= 1;
+            direction = 1;
+            walking = true;
+        }
+        if (input.contains("RIGHT")) {
+            dX += 1;
+            direction = 2;
+            walking = true;
+        }
+        if (input.contains("UP")) {
+            dY -= 1;
+            direction = 3;
+            walking = true;
+        }
+        if (input.contains("DOWN")) {
+            dY += 1;
+            direction = 0;
+            walking = true;
+        }
+        if (input.contains("T")) {
+            chatComponent.allow();
+        }
+        
+        me.setX(dX);
+        me.setY(dY);
+        me.setDirection(direction);
+        me.setWalking(walking);
     }
 
     private void initScene(Pane body) {
@@ -237,14 +273,12 @@ public class IngameWindow extends CustomWindow {
             Image texture = SwingFXUtils.toFXImage(rescaled, null);
             
             background = new StaticLayer(canvasBackground.getGraphicsContext2D(), 
-                    packet.getBackground(), texture, 64, width, height, 
-                    0, 0);
+                    packet.getBackground(), texture, 64, width, height, 0, 0);
             scene.getRoot().setStyle("-fx-background-color: #" + packet.getBackgroundColor());
             getMe().setX(packet.getSpawnX() * scaleInPixel);
             getMe().setY(packet.getSpawnY() * scaleInPixel);
             foreground = new StaticLayer(canvasForeground.getGraphicsContext2D(), 
-                    packet.getForeground(), texture, 64, width, height, 
-                    0, 0);
+                    packet.getForeground(), texture, 64, width, height, 0, 0);
             playerInfoComponent.renderMapCanvas(packet.getBackground());
             entities.addAll(packet.getMiddle().getParts().stream().flatMap(
                     part -> part.getPlaces().stream().map(place -> {
