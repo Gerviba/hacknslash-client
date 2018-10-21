@@ -2,13 +2,11 @@ package hu.gerviba.hackandslash.client.gui.ingame;
 
 import java.io.IOException;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import hu.gerviba.hackandslash.client.HacknslashApplication;
 import hu.gerviba.hackandslash.client.gui.CustomComponent;
-import hu.gerviba.hackandslash.packets.ChatMessagePacket;
-import hu.gerviba.hackandslash.packets.TemplatePacketBuilder;
-import hu.gerviba.hackandslash.packets.ChatMessagePacket.MessageType;
+import hu.gerviba.hackandslash.client.packets.ChatMessagePacket;
+import hu.gerviba.hackandslash.client.packets.ChatMessagePacket.MessageType;
+import hu.gerviba.hackandslash.client.packets.TemplatePacketBuilder;
 import javafx.application.Platform;
 import javafx.geometry.HPos;
 import javafx.scene.control.Button;
@@ -23,8 +21,6 @@ import javafx.scene.text.Text;
 
 public class ChatHud implements CustomComponent {
 
-    private ObjectMapper mapper = new ObjectMapper();
-    
     private AnchorPane chatWrapper;
     private TextField chatInput;
     private Button sendMessage;
@@ -50,12 +46,33 @@ public class ChatHud implements CustomComponent {
         }
         ChatMessagePacket msg;
         try {
-            msg = mapper.readValue(o, ChatMessagePacket.class);
+            msg = HacknslashApplication.JSON_MAPPER.readValue(o, ChatMessagePacket.class);
             texts[9].setText(" " + msg.getMessage() + " ");
             texts[9].setId("color-" + msg.getType().getColor());
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+    
+    private void sendChatMessage() {
+        HacknslashApplication.getInstance().getConnection().appendTask(stomp -> {
+            try {
+                if (chatInput.getText().length() > 0)
+                    stomp.send("/app/chat", TemplatePacketBuilder.buildChatMessage(MessageType.CHAT,
+                            HacknslashApplication.getInstance().getUser().getName(), 
+                            null, chatInput.getText()));
+                
+                Platform.runLater(() -> {
+                    chatInput.setDisable(true);
+                    sendMessage.setDisable(true);
+                    title.setVisible(false);
+                    chatInput.setText("");
+                    chatWrapper.getStyleClass().clear();
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
     }
     
     @Override
@@ -88,56 +105,19 @@ public class ChatHud implements CustomComponent {
         chat.add(title, 0, 0, 2, 1);
         for (int i = 0; i < 10; ++i)
             chat.add(texts[i], 0, i + 1, 2, 1);
-//        title.setVisible(false);
         
         chatInput = new TextField();
         chatInput.setDisable(true);
         chatInput.setOnKeyReleased(event -> {
             if (event.getCode().equals(KeyCode.ENTER)) {
-                HacknslashApplication.getInstance().getConnection().appendTask(stomp -> {
-                    try {
-                        if (chatInput.getText().length() > 0)
-                            stomp.send("/app/chat", TemplatePacketBuilder.buildChatMessage(MessageType.CHAT,
-                                    HacknslashApplication.getInstance().getUser().getName(), 
-                                    null, chatInput.getText()));
-                        
-                        Platform.runLater(() -> {
-                            chatInput.setDisable(true);
-                            sendMessage.setDisable(true);
-                            title.setVisible(false);
-                            chatInput.setText("");
-                            chatWrapper.getStyleClass().clear();
-                        });
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                });
+                sendChatMessage();
             }
         });
         
         chat.add(chatInput, 0, 11, 1, 2);
         sendMessage = new Button(">");
         sendMessage.setDisable(true);
-        sendMessage.setOnMouseClicked(event -> {
-            HacknslashApplication.getInstance().getConnection().appendTask(stomp -> {
-                try {
-                    if (chatInput.getText().length() > 0)
-                        stomp.send("/app/chat", TemplatePacketBuilder.buildChatMessage(MessageType.CHAT,
-                            HacknslashApplication.getInstance().getUser().getName(), 
-                            null, chatInput.getText()));
-                    
-                    Platform.runLater(() -> {
-                        chatInput.setDisable(true);
-                        sendMessage.setDisable(true);
-                        title.setVisible(false);
-                        chatInput.setText("");
-                        chatWrapper.getStyleClass().clear();
-                    });
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            });
-        });
+        sendMessage.setOnMouseClicked(event -> sendChatMessage());
         chat.add(sendMessage, 1, 11);
         return chatWrapper;
     }

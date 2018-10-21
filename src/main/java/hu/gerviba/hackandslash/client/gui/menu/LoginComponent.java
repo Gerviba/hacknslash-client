@@ -3,10 +3,10 @@ package hu.gerviba.hackandslash.client.gui.menu;
 import org.springframework.web.client.RestTemplate;
 
 import hu.gerviba.hackandslash.client.HacknslashApplication;
+import hu.gerviba.hackandslash.client.auth.pojo.AuthStatus;
+import hu.gerviba.hackandslash.client.auth.pojo.LoginRequest;
+import hu.gerviba.hackandslash.client.auth.pojo.LoginResponse;
 import hu.gerviba.hackandslash.client.gui.CustomComponent;
-import hu.gerviba.hacknslash.client.auth.pojo.AuthStatus;
-import hu.gerviba.hacknslash.client.auth.pojo.LoginRequest;
-import hu.gerviba.hacknslash.client.auth.pojo.LoginResponse;
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;

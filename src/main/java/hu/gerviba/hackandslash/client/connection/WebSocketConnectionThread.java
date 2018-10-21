@@ -12,7 +12,7 @@ import org.springframework.messaging.simp.stomp.StompSession;
 import org.springframework.util.concurrent.ListenableFuture;
 
 import hu.gerviba.hackandslash.client.gui.ingame.IngameWindow;
-import hu.gerviba.hackandslash.packets.TemplatePacketBuilder;
+import hu.gerviba.hackandslash.client.packets.TemplatePacketBuilder;
 import javafx.application.Platform;
 import lombok.extern.slf4j.Slf4j;
 
@@ -30,7 +30,6 @@ public class WebSocketConnectionThread extends Thread {
     public WebSocketConnectionThread(String ip, String sessionId, Runnable after) {
         this.setName("WebsocketConnection");
         this.setDaemon(true);
-        // TODO: Performace improve with lower priority
         this.setUncaughtExceptionHandler((thread, exception) -> {
             log.error("Exception in thread " + thread.getName(), exception);
         });
@@ -62,6 +61,7 @@ public class WebSocketConnectionThread extends Thread {
             subscribePrivateChat(stomp);
             subscribeTelemetry(stomp);
             subscribeMap(stomp);
+            subscribeSelfInfo(stomp);
 
             sendJustConnected();
             
@@ -108,6 +108,22 @@ public class WebSocketConnectionThread extends Thread {
             @Override
             public void handleFrame(StompHeaders stompHeaders, Object o) {
                 Platform.runLater(() -> ingame.updateTelemetry((byte[]) o));
+            }
+            
+        });
+    }
+    
+    private void subscribeSelfInfo(StompSession stomp) {
+        stomp.subscribe("/user/topic/self", new StompFrameHandler() {
+
+            @Override
+            public Type getPayloadType(StompHeaders stompHeaders) {
+                return byte[].class;
+            }
+
+            @Override
+            public void handleFrame(StompHeaders stompHeaders, Object o) {
+                Platform.runLater(() -> ingame.getPlayerInfoComponent().update((byte[]) o));
             }
             
         });

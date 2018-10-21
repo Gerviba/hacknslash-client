@@ -1,4 +1,4 @@
-package hu.gerviba.hackandslash.packets;
+package hu.gerviba.hackandslash.client.packets;
 
 import java.util.List;
 

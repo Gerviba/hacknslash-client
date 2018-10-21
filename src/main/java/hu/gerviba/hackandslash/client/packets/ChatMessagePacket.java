@@ -1,4 +1,4 @@
-package hu.gerviba.hackandslash.packets;
+package hu.gerviba.hackandslash.client.packets;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

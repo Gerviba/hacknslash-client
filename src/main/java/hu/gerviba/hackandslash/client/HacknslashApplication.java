@@ -4,9 +4,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import hu.gerviba.hackandslash.client.auth.pojo.UserRepresentation;
 import hu.gerviba.hackandslash.client.connection.WebSocketConnectionThread;
 import hu.gerviba.hackandslash.client.gui.menu.AuthenticateWindow;
-import hu.gerviba.hacknslash.client.auth.pojo.UserRepresentation;
 import javafx.application.Application;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
@@ -15,6 +17,9 @@ import lombok.Setter;
 
 public class HacknslashApplication extends Application {
 
+    public static final ObjectMapper JSON_MAPPER = new ObjectMapper();
+    
+    @Deprecated
     public static final ScheduledExecutorService ASYNC = Executors.newSingleThreadScheduledExecutor();
     
     @Getter

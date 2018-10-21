@@ -1,7 +1,7 @@
-package hu.gerviba.hackandslash.packets;
+package hu.gerviba.hackandslash.client.packets;
 
 import hu.gerviba.hackandslash.client.gui.ingame.model.PlayerModel;
-import hu.gerviba.hackandslash.packets.ChatMessagePacket.MessageType;
+import hu.gerviba.hackandslash.client.packets.ChatMessagePacket.MessageType;
 
 public class TemplatePacketBuilder {
 

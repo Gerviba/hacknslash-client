@@ -6,19 +6,36 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 
 import hu.gerviba.hackandslash.client.ImageUtil;
-import hu.gerviba.hackandslash.packets.TelemetryPacket;
+import hu.gerviba.hackandslash.client.packets.TelemetryPacket;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
+import javafx.scene.paint.Color;
 import lombok.Data;
 
 @Data
 public class PlayerModel implements RenderableEntity {
 
-    public static final int[][] TEXTURE_STAND = new int[][] {new int[] {0, 0}, new int[] {1, 0}, new int[] {2, 0}, new int[] {1, 0}};
-    public static final int[][] TEXTURE_LEFT = new int[][] {new int[] {0, 1}, new int[] {1, 1}, new int[] {2, 1}, new int[] {1, 1}};
-    public static final int[][] TEXTURE_RIGHT = new int[][] {new int[] {0, 2}, new int[] {1, 2}, new int[] {2, 2}, new int[] {1, 2}};
-    public static final int[][] TEXTURE_BACK = new int[][] {new int[] {0, 3}, new int[] {1, 3}, new int[] {2, 3}, new int[] {1, 3}};
+    public static final int[][] TEXTURE_STAND = new int[][] {
+        new int[] {0, 0}, 
+        new int[] {1, 0}, 
+        new int[] {2, 0}, 
+        new int[] {1, 0}};
+    public static final int[][] TEXTURE_LEFT = new int[][] {
+        new int[] {0, 1}, 
+        new int[] {1, 1},
+        new int[] {2, 1},
+        new int[] {1, 1}};
+    public static final int[][] TEXTURE_RIGHT = new int[][] {
+        new int[] {0, 2}, 
+        new int[] {1, 2}, 
+        new int[] {2, 2},
+        new int[] {1, 2}};
+    public static final int[][] TEXTURE_BACK = new int[][] {
+        new int[] {0, 3}, 
+        new int[] {1, 3}, 
+        new int[] {2, 3},
+        new int[] {1, 3}};
     
     public static final int[][][] PLAYER_TEXTURE = new int[][][] {
         TEXTURE_STAND,
@@ -27,13 +44,20 @@ public class PlayerModel implements RenderableEntity {
         TEXTURE_BACK
     };
     
+    private static final Color BLACK_COLOR = new Color(0, 0, 0, 1);
+    private static final Color TRANSPARENT_BLACK_COLOR = new Color(0, 0, 0, 0.5);
+    private static final Color WHITE_COLOR = new Color(1, 1, 1, 1);
+    private static final Color RED_COLOR = new Color(1, 0, 0, 1);
+    
     private final long entityId;
+    private final String name;
     
     private volatile double x;
     private volatile double y;
     private volatile int scale;
     private volatile int direction;
-    private volatile boolean walking = true;
+    private volatile boolean walking;
+    private volatile float hp;
     
     private double targetX;
     private double targetY;
@@ -42,12 +66,13 @@ public class PlayerModel implements RenderableEntity {
     
     private Image texture;
     
-    public PlayerModel(long entityId, int scale, String texture, int width, int height) throws IOException {
+    public PlayerModel(long entityId, String name, int scale, String texture, int width, int height) throws IOException {
         this.entityId = entityId;
         this.scale = scale * 32;
         this.width = width;
         this.height = height;
-
+        this.name = name;
+        
         BufferedImage image = ImageIO.read(PlayerModel.class
                 .getResource("/assets/characters/" + texture + ".png"));
         BufferedImage rescaled = ImageUtil.scale(image, image.getType(), scale);
@@ -56,7 +81,13 @@ public class PlayerModel implements RenderableEntity {
     }
     
     @Override
-    public void draw(GraphicsContext gc, double time, double dX, double dY) {
+    public void draw(GraphicsContext midGc, GraphicsContext topGc, double time, double dX, double dY) {
+        renderModel(midGc, time, dX, dY);
+        renderName(topGc, dX, dY);
+        renderHPBar(topGc, dX, dY);
+    }
+
+    private void renderModel(GraphicsContext gc, double time, double dX, double dY) {
         int state = (int) (((long) (time * 6)) % 4);
         gc.drawImage(texture, 
                 scale * PLAYER_TEXTURE[direction][(walking ? state : 1)][0], 
@@ -65,6 +96,31 @@ public class PlayerModel implements RenderableEntity {
                 this.x - dX  + (width / 2), 
                 this.y - dY  + (height / 2), 
                 scale, scale);
+    }
+    
+    private void renderName(GraphicsContext gc, double dX, double dY) {
+        gc.setStroke(BLACK_COLOR);
+        gc.setFill(WHITE_COLOR);
+        gc.strokeText(name, 
+                this.x - dX  + (width / 2) + (scale / 2), 
+                this.y - dY  + (height / 2) - 12);
+        gc.fillText(name, 
+                this.x - dX  + (width / 2) + (scale / 2), 
+                this.y - dY  + (height / 2) - 12);
+    }
+
+    private void renderHPBar(GraphicsContext gc, double dX, double dY) {
+        gc.setFill(TRANSPARENT_BLACK_COLOR);
+        gc.fillRect(
+                this.x - dX  + (width / 2) + (scale * 0.125) - 1, 
+                this.y - dY  + (height / 2) - 10,
+                scale * 0.75 + 2, 6);
+        
+        gc.setFill(RED_COLOR);
+        gc.fillRect(
+                this.x - dX  + (width / 2) + (scale * 0.125), 
+                this.y - dY  + (height / 2) - 9,
+                scale * 0.75 * hp, 4);
     }
     
     public void update(TelemetryPacket.PlayerModelStatus pms) {
@@ -76,6 +132,7 @@ public class PlayerModel implements RenderableEntity {
             this.y = this.targetY;
         this.direction = pms.getDirection();
         this.walking = pms.isWalking();
+        this.hp = pms.getHp();
     }
 
     @Override

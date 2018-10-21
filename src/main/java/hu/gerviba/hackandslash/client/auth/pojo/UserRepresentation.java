@@ -1,4 +1,4 @@
-package hu.gerviba.hacknslash.client.auth.pojo;
+package hu.gerviba.hackandslash.client.auth.pojo;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,26 +9,18 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class ServerListInfoResponse {
+public class UserRepresentation {
 
+    @Getter
+    @Setter
+    private String uuid;
+    
     @Getter
     @Setter
     private String name;
     
     @Getter
     @Setter
-    private String motd;
-    
-    @Getter
-    @Setter
-    private int users;
-    
-    @Getter
-    @Setter
-    private int maxUsers;
-    
-    @Getter
-    @Setter
-    private String icon;
+    private String sessionId;
     
 }

@@ -1,4 +1,4 @@
-package hu.gerviba.hacknslash.client.auth.pojo;
+package hu.gerviba.hackandslash.client.auth.pojo;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,18 +9,18 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class RegisterRequest {
-
-    @Getter
-    @Setter
-    private String username;
-
-    @Getter
-    @Setter
-    private String email;
+public class LoginResponse {
     
     @Getter
     @Setter
-    private String password;
+    private SimpleStatusResponse status;
     
+    @Getter
+    @Setter
+    private UserRepresentation user;
+    
+    @Getter
+    @Setter
+    private String[] servers;
+        
 }

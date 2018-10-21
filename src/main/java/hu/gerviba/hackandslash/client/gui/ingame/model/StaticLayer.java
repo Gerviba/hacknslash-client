@@ -1,6 +1,6 @@
 package hu.gerviba.hackandslash.client.gui.ingame.model;
 
-import hu.gerviba.hackandslash.packets.MapLoadPacket.MapLayerInfo;
+import hu.gerviba.hackandslash.client.packets.MapLoadPacket.MapLayerInfo;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import lombok.Data;

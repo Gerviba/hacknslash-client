@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import javax.imageio.ImageIO;
 
@@ -17,12 +18,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import hu.gerviba.hackandslash.client.HacknslashApplication;
 import hu.gerviba.hackandslash.client.ImageUtil;
 import hu.gerviba.hackandslash.client.gui.CustomWindow;
+import hu.gerviba.hackandslash.client.gui.ingame.model.MiddleModel;
 import hu.gerviba.hackandslash.client.gui.ingame.model.PlayerModel;
 import hu.gerviba.hackandslash.client.gui.ingame.model.RenderableEntity;
 import hu.gerviba.hackandslash.client.gui.ingame.model.StaticLayer;
-import hu.gerviba.hackandslash.packets.MapLoadPacket;
-import hu.gerviba.hackandslash.packets.TelemetryPacket;
-import hu.gerviba.hackandslash.packets.TelemetryPacket.PlayerModelStatus;
+import hu.gerviba.hackandslash.client.packets.MapLoadPacket;
+import hu.gerviba.hackandslash.client.packets.TelemetryPacket;
+import hu.gerviba.hackandslash.client.packets.TelemetryPacket.PlayerModelStatus;
 import javafx.animation.AnimationTimer;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.Scene;
@@ -32,6 +34,8 @@ import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.text.Font;
+import javafx.scene.text.TextAlignment;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -58,36 +62,12 @@ public class IngameWindow extends CustomWindow {
     private StaticLayer background = null;
     private Canvas canvasForeground;
     private StaticLayer foreground = null;
+    private Canvas playerNames;
     
     private int height;
     private int width;
     private int scale;
     private int scaleInPixel;
-    
-    public void updateTelemetry(byte[] o) {
-        TelemetryPacket telemetry;
-        try {
-            telemetry = mapper.readValue(o, TelemetryPacket.class);
-            
-            if (telemetry.getPlayers() != null) {
-                for (PlayerModelStatus pms : telemetry.getPlayers()) {
-                    if (playerModel.containsKey(pms.getEntityId())) {
-                        playerModel.get(pms.getEntityId()).update(pms);
-                    } else {
-                        PlayerModel player = new PlayerModel(pms.getEntityId(), scale, 
-                                "player_no1", width, height);
-                        player.update(pms);
-                        player.setX(pms.getX());
-                        player.setY(pms.getY());
-                        playerModel.put(pms.getEntityId(), player);
-                        entities.add(player);
-                    }
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
     
     /**
      * Ingame:
@@ -140,6 +120,10 @@ public class IngameWindow extends CustomWindow {
         ingame.getChildren().add(canvasMiddle);
         canvasForeground = new Canvas(width, height);
         ingame.getChildren().add(canvasForeground);
+        playerNames = new Canvas(width, height);
+        ingame.getChildren().add(playerNames);
+        playerNames.getGraphicsContext2D().setTextAlign(TextAlignment.CENTER);
+        playerNames.getGraphicsContext2D().setFont(new Font("Roboto Mono Bold", 12));
         
         Set<String> input = new HashSet<>();
         
@@ -161,7 +145,7 @@ public class IngameWindow extends CustomWindow {
         try {
             GraphicsContext layerMiddle = canvasMiddle.getGraphicsContext2D();
             playerModel.put(PLAYER_ENTITY_ID, 
-                    new PlayerModel(PLAYER_ENTITY_ID, scale, "player_no1", width, height));
+                    new PlayerModel(PLAYER_ENTITY_ID, "null", scale, "player_no1", width, height));
             
             long startNanoTime = System.nanoTime();
             new AnimationTimer() {
@@ -210,13 +194,16 @@ public class IngameWindow extends CustomWindow {
                             me.getX() / scaleInPixel, 
                             me.getY() / scaleInPixel);
                     
+
                     layerMiddle.clearRect(0, 0, width, height);
+                    GraphicsContext topLayer = playerNames.getGraphicsContext2D();
+                    topLayer.clearRect(0, 0, width, height);
                     entities.stream()
                             .filter(pm -> pm != null)
                             .sorted((a, b) -> Double.compare(a.getY(), b.getY()))
                             .forEachOrdered(entity -> {
                                 entity.calc();
-                                entity.draw(layerMiddle, t, me.getX(), me.getY());
+                                entity.draw(layerMiddle, topLayer, t, me.getX(), me.getY());
                             });
                 }
             }.start();
@@ -259,9 +246,45 @@ public class IngameWindow extends CustomWindow {
                     packet.getForeground(), texture, 64, width, height, 
                     0, 0);
             playerInfoComponent.renderMapCanvas(packet.getBackground());
+            entities.addAll(packet.getMiddle().getParts().stream().flatMap(
+                    part -> part.getPlaces().stream().map(place -> {
+                        return new MiddleModel(
+                                scaleInPixel * place[0],
+                                scaleInPixel * place[1],
+                                scaleInPixel, scaleInPixel,
+                                scale, texture,
+                                part.getX(), part.getY(), 
+                                width, height);
+                    })).collect(Collectors.toList()));
+            
             log.info("Map loaded");
         } catch (Exception e) {
             log.error("Failed to load map", e);
+        }
+    }
+    
+    public void updateTelemetry(byte[] o) {
+        TelemetryPacket telemetry;
+        try {
+            telemetry = mapper.readValue(o, TelemetryPacket.class);
+            
+            if (telemetry.getPlayers() != null) {
+                for (PlayerModelStatus pms : telemetry.getPlayers()) {
+                    if (playerModel.containsKey(pms.getEntityId())) {
+                        playerModel.get(pms.getEntityId()).update(pms);
+                    } else {
+                        PlayerModel player = new PlayerModel(pms.getEntityId(), pms.getName(), 
+                                scale, "player_no1", width, height);
+                        player.update(pms);
+                        player.setX(pms.getX());
+                        player.setY(pms.getY());
+                        playerModel.put(pms.getEntityId(), player);
+                        entities.add(player);
+                    }
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
     

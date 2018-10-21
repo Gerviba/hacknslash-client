@@ -8,7 +8,6 @@ public interface RenderableEntity {
 
     public void calc();
 
-    public void draw(GraphicsContext gc, double time, double x, double y);
-
+    public void draw(GraphicsContext midGc, GraphicsContext topGc, double time, double x, double y);
     
 }

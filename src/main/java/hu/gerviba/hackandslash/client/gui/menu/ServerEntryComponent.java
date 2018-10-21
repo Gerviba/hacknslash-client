@@ -6,8 +6,8 @@ import java.util.Base64;
 import org.springframework.web.client.RestTemplate;
 
 import hu.gerviba.hackandslash.client.HacknslashApplication;
+import hu.gerviba.hackandslash.client.auth.pojo.ServerListInfoResponse;
 import hu.gerviba.hackandslash.client.gui.CustomComponent;
-import hu.gerviba.hacknslash.client.auth.pojo.ServerListInfoResponse;
 import javafx.application.Platform;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;

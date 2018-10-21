@@ -1,4 +1,4 @@
-package hu.gerviba.hacknslash.client.auth.pojo;
+package hu.gerviba.hackandslash.client.auth.pojo;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
