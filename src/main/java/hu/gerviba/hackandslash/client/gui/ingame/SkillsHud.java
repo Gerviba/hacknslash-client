@@ -1,10 +1,14 @@
 package hu.gerviba.hackandslash.client.gui.ingame;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import hu.gerviba.hackandslash.client.HacknslashApplication;
 import hu.gerviba.hackandslash.client.ImageUtil;
 import hu.gerviba.hackandslash.client.gui.CustomComponent;
+import hu.gerviba.hackandslash.client.packets.SkillPacket;
+import hu.gerviba.hackandslash.client.skills.ThunderSkill;
 import hu.gerviba.hackandslash.client.skills.FlameCircleSkill;
 import hu.gerviba.hackandslash.client.skills.HealthPotion;
 import hu.gerviba.hackandslash.client.skills.ManaPotion;
@@ -26,7 +30,9 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class SkillsHud implements CustomComponent {
 
     private static final int ITEM_SIZE = 64;
@@ -39,6 +45,7 @@ public class SkillsHud implements CustomComponent {
     
     private final IngameWindow ingame;
     private final Map<Integer, Skill> skills = new HashMap<>();
+    private final Map<Integer, Skill> shortcut = new HashMap<>();
     
     public SkillsHud(IngameWindow ingame) {
         this.ingame = ingame;
@@ -88,13 +95,17 @@ public class SkillsHud implements CustomComponent {
             skills.add(label, i, 1);
         }
         
-        this.skills.put(1, new PoisonedAreaSkill(0, 4000));
-        this.skills.put(2, new WaterBeamSkill(0, 1500));
-        this.skills.put(3, new PurpleMagicSkill(0, 2000));
-        this.skills.put(4, new FlameCircleSkill(0, 3000));
-        // 5
-        this.skills.put(6, new HealthPotion(0, 1500));
-        this.skills.put(7, new ManaPotion(0, 1000));
+        this.skills.put(1, new PoisonedAreaSkill(1, 0, 4000));
+        this.skills.put(2, new WaterBeamSkill(2, 0, 1500));
+        this.skills.put(3, new PurpleMagicSkill(3, 0, 2000));
+        this.skills.put(4, new FlameCircleSkill(4, 0, 3000));
+        this.skills.put(5, new ThunderSkill(5, 0, 3000));
+        this.skills.put(101, new HealthPotion(101, 0, 1000));
+        this.skills.put(102, new HealthPotion(102, 0, 2500));
+        this.skills.put(103, new HealthPotion(103, 0, 10000));
+        this.skills.put(201, new ManaPotion(201, 0, 1000));
+        this.skills.put(202, new ManaPotion(202, 0, 2500));
+        this.skills.put(203, new ManaPotion(203, 0, 10000));
         
         addItem(0, 0, 0, ITEM_SIZE);
         addItem(1, 1, 0, ITEM_SIZE);
@@ -103,6 +114,14 @@ public class SkillsHud implements CustomComponent {
         addItem(4, 4, 0, ITEM_SIZE);
         addItem(5, 1, 3, ITEM_SIZE);
         addItem(6, 0, 4, ITEM_SIZE);
+        
+        this.shortcut.put(1, this.skills.get(1));
+        this.shortcut.put(2, this.skills.get(2));
+        this.shortcut.put(3, this.skills.get(3));
+        this.shortcut.put(4, this.skills.get(4));
+        this.shortcut.put(5, this.skills.get(5));
+        this.shortcut.put(6, this.skills.get(102));
+        this.shortcut.put(7, this.skills.get(201));
         
         return skillsWrapper;
     }
@@ -118,9 +137,9 @@ public class SkillsHud implements CustomComponent {
     }
 
     public void handleSkill(int skillUid) {
-        if (skills.containsKey(skillUid) && skills.get(skillUid).canCast()) {
-            skills.get(skillUid).cast(ingame.getMe(), ingame);
-            reloadTimer(itemBackgrounds[skillUid - 1], skills.get(skillUid));
+        if (shortcut.containsKey(skillUid) && shortcut.get(skillUid).canCast()) {
+            shortcut.get(skillUid).send();
+            reloadTimer(itemBackgrounds[skillUid - 1], shortcut.get(skillUid));
         }
     }
     
@@ -134,6 +153,15 @@ public class SkillsHud implements CustomComponent {
                 new KeyValue(background.translateYProperty(), ITEM_SIZE + 8))
         );
         timeline.play();
+    }
+
+    public void applySkill(byte[] o) {
+        try {
+            SkillPacket packet = HacknslashApplication.JSON_MAPPER.readValue(o, SkillPacket.class);
+            skills.get(packet.getSkillUid()).cast(packet.getX(), packet.getY(), packet.getDirection(), ingame);
+        } catch (IOException e) {
+            log.error("Failed to cast skill", e);
+        }
     }
 
 }

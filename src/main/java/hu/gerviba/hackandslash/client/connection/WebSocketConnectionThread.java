@@ -62,6 +62,7 @@ public class WebSocketConnectionThread extends Thread {
             subscribeTelemetry(stomp);
             subscribeMap(stomp);
             subscribeSelfInfo(stomp);
+            subscribeSkills(stomp);
 
             sendJustConnected();
             
@@ -162,7 +163,24 @@ public class WebSocketConnectionThread extends Thread {
             
         });
     }
+    
+    private void subscribeSkills(StompSession stomp) {
+        stomp.subscribe("/topic/skills", new StompFrameHandler() {
 
+            @Override
+            public Type getPayloadType(StompHeaders stompHeaders) {
+                return byte[].class;
+            }
+
+            @Override
+            public void handleFrame(StompHeaders stompHeaders, Object o) {
+                log.info("Skill " + new String((byte[]) o));
+                Platform.runLater(() -> ingame.getSkillsComponent().applySkill((byte[]) o));
+            }
+            
+        });
+    }
+    
     private void doPolling(StompSession stomp) throws InterruptedException {
         Consumer<StompSession> event;
         List<Consumer<StompSession>> burst = new LinkedList<>();

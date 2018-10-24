@@ -263,7 +263,7 @@
     -fx-padding: 5px;
 }
 
-.hud .progress-bar:indeterminate > .bar {
+.hud .progress-bar:indeterminate > .bar {.
     -fx-background-color: linear-gradient(to left, transparent, -fx-accent);
 }
 
@@ -271,6 +271,23 @@
 	-fx-background-color: rgba(0,0,0,0.3);
     -fx-background-insets: 0, 0 0 1 0, 1 1 2 1;
     -fx-background-radius: 0, 0, 0, 0;
+}
+
+.skills {
+	
+}
+
+.skills .background {
+	-fx-background-color: rgba(0,0,0,0.5);
+}
+
+.skills .item {
+	-fx-background-color: rgba(0,0,0,0.3);
+}
+
+.skills .label {
+	-fx-fill: #FFFFFF;
+	-fx-effect: dropshadow(one-pass-box, rgba(0,0,0,0.8), 0, 0, 1, 1);
 }
 
 .scroll-bar {

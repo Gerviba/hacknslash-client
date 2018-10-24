@@ -1,7 +1,6 @@
 package hu.gerviba.hackandslash.client.skills;
 
 import hu.gerviba.hackandslash.client.gui.ingame.IngameWindow;
-import hu.gerviba.hackandslash.client.gui.ingame.model.PlayerModel;
 import hu.gerviba.hackandslash.client.gui.ingame.particle.ParticleInstance;
 import hu.gerviba.hackandslash.client.gui.ingame.particle.Particles;
 
@@ -10,8 +9,8 @@ public class FlameCircleSkill extends Skill {
     private final double[] X_COORDS, Y_COORDS;
     private final int FLAMES = 12;
     
-    public FlameCircleSkill(double manaCost, double reloadTime) {
-        super(manaCost, reloadTime);
+    public FlameCircleSkill(int skillUid, double manaCost, double reloadTime) {
+        super(skillUid, manaCost, reloadTime);
         
         final double r = 0.75;
         X_COORDS = new double[FLAMES];
@@ -24,14 +23,12 @@ public class FlameCircleSkill extends Skill {
     }
 
     @Override
-    public void cast(PlayerModel pm, IngameWindow ingame) {
-        use();
-        
+    public void cast(double x, double y, int direction, IngameWindow ingame) {
         for (int i = 0; i < FLAMES; ++i)
             ingame.getEntities().add(new ParticleInstance(Particles.LONG_FLAME, 
                     System.currentTimeMillis(), 
-                    pm.getGeneralX() + X_COORDS[i], 
-                    pm.getGeneralY() + Y_COORDS[i], 
+                    x + X_COORDS[i], 
+                    y + Y_COORDS[i], 
                     ingame.getScaleInPixel(), 
                     ingame.getWidth(), 
                     ingame.getHeight(),

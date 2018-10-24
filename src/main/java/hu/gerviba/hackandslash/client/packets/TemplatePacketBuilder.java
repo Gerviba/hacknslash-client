@@ -20,5 +20,9 @@ public class TemplatePacketBuilder {
         return String.format("{\"height\":%d,\"width\":%d,\"scale\":%d}", 
                 height, width, scale).getBytes();
     }
+
+    public static byte[] buildSkillPacket(int skillUid) {
+        return String.format("{\"skillUid\":%d}", skillUid).getBytes();
+    }
     
 }
