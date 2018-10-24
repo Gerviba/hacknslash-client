@@ -47,8 +47,8 @@ public class MapLoadPacket {
     private String name;
     private String displayName;
     private String texture;
-    private int spawnX;
-    private int spawnY;
+    private double spawnX;
+    private double spawnY;
     private MapLayerInfo foreground;
     private MapLayerInfo background;
     private MapLayerInfo middle;

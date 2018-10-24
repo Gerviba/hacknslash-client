@@ -34,10 +34,13 @@ public class MiddleModel implements RenderableModel {
     }
 
     @Override
-    public double getY() {
+    public double getOrder() {
         return dY;
     }
 
-
+    @Override
+    public boolean isFinished() {
+        return false;
+    }
 
 }

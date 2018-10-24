@@ -8,7 +8,7 @@ import lombok.Getter;
 public abstract class CustomWindow {
 
     @Getter
-    private static CustomWindow currentWindow;
+    private static CustomWindow currentWindow = null;
     
     @Getter
     protected Scene scene;   
@@ -27,12 +27,18 @@ public abstract class CustomWindow {
     }
 
     public final void setThisToCurrentWindow() {
+        if (currentWindow != null)
+            currentWindow.onClose();
         currentWindow = this;
 //        System.err.println("Replacing " + Thread.currentThread().getStackTrace()[2]);
         stage.setScene(scene);
         stage.show();
     }
-    
+
     protected abstract void init();
+    
+    public void onClose() {
+        
+    }
     
 }

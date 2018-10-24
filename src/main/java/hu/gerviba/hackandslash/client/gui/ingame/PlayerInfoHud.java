@@ -159,8 +159,8 @@ public class PlayerInfoHud implements CustomComponent {
     }
     
     public void updateMapCanvas(double x, double y) {
-        mapCanvas.setTranslateX((-x * scale) + 64 - (scale / 2));
-        mapCanvas.setTranslateY((-y * scale) + 64 - (scale / 2));
+        mapCanvas.setTranslateX((-x * scale) + 64 + (scale/2));
+        mapCanvas.setTranslateY((-y * scale) + 64 + (scale/2));
     }
 
     public void update(byte[] o) {

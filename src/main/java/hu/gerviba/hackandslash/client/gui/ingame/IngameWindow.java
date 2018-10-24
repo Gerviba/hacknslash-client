@@ -1,6 +1,5 @@
 package hu.gerviba.hackandslash.client.gui.ingame;
 
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
@@ -9,9 +8,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-
-import javax.imageio.ImageIO;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -19,14 +18,16 @@ import hu.gerviba.hackandslash.client.HacknslashApplication;
 import hu.gerviba.hackandslash.client.ImageUtil;
 import hu.gerviba.hackandslash.client.gui.CustomWindow;
 import hu.gerviba.hackandslash.client.gui.ingame.model.MiddleModel;
+import hu.gerviba.hackandslash.client.gui.ingame.model.PermanentParticleInstance;
 import hu.gerviba.hackandslash.client.gui.ingame.model.PlayerModel;
 import hu.gerviba.hackandslash.client.gui.ingame.model.RenderableModel;
 import hu.gerviba.hackandslash.client.gui.ingame.model.StaticLayer;
+import hu.gerviba.hackandslash.client.gui.ingame.particle.Particles;
 import hu.gerviba.hackandslash.client.packets.MapLoadPacket;
 import hu.gerviba.hackandslash.client.packets.TelemetryPacket;
 import hu.gerviba.hackandslash.client.packets.TelemetryPacket.PlayerModelStatus;
 import javafx.animation.AnimationTimer;
-import javafx.embed.swing.SwingFXUtils;
+import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -51,12 +52,15 @@ public class IngameWindow extends CustomWindow {
     
     @Getter
     private PlayerInfoHud playerInfoComponent;
+
+    @Getter
+    private SkillsHud skillsComponent;
     
     @Getter
     private Map<Long, PlayerModel> playerModel;
 
     @Getter
-    private List<RenderableModel> entities = Collections.synchronizedList(new LinkedList<>());
+    private List<RenderableModel> entities;
     
     private Canvas canvasBackground;
     private StaticLayer background = null;
@@ -65,12 +69,18 @@ public class IngameWindow extends CustomWindow {
     private StaticLayer foreground = null;
     private Canvas playerNames;
     
+    @Getter
     private int height;
+    @Getter
     private int width;
+    @Getter
     private int scale;
+    @Getter
     private int scaleInPixel;
     
-    AnimationTimer animationTimer;
+    AnimationTimer animationTimer = null;
+    
+    ScheduledFuture<?> entityGrabageCollector = null;
     
     Set<String> input = new HashSet<>();
 
@@ -111,6 +121,7 @@ public class IngameWindow extends CustomWindow {
 
         playerInfoComponent = new PlayerInfoHud();
         ingame.getChildren().add(playerInfoComponent.toPane());
+
         
         scene.setOnKeyPressed(e -> {
             String code = e.getCode().toString();
@@ -123,62 +134,99 @@ public class IngameWindow extends CustomWindow {
         });
         
         startAnimationLoop();
+        startEntityGrabageCollector();
+
+        skillsComponent = new SkillsHud(this);
+        ingame.getChildren().add(skillsComponent.toPane());
         
         chatComponent = new ChatHud();
         ingame.getChildren().add(chatComponent.toPane());
         
+        addParticles();
+        
         HacknslashApplication.getInstance().getConnection().startTelemetry();
     }
 
+    @Override
+    public void onClose() {
+        if (animationTimer != null)
+            animationTimer.stop();
+        if (entityGrabageCollector != null && !entityGrabageCollector.isCancelled())
+            entityGrabageCollector.cancel(false);
+    }
+    
+    private void addParticles() {
+//        Particle anim = new AnimatedParticle(texture, 0, 9, 24, 3, 500);
+//        Particle anim = new AnimatedParticle(texture, 9, 6, 24, 2, 250);
+//        Particle anim = new AnimatedParticle(texture, 6, 7, 24, 3, 250);
+        
+        entities.add(new PermanentParticleInstance(Particles.WATER, System.currentTimeMillis(), 
+                3.5, 5.5, scaleInPixel, width, height, 0));
+        entities.add(new PermanentParticleInstance(Particles.POISON, System.currentTimeMillis(), 
+                4.5, 5.5, scaleInPixel, width, height, 0));
+        entities.add(new PermanentParticleInstance(Particles.FLAME, System.currentTimeMillis(), 
+                5.5, 5.5, scaleInPixel, width, height, 0));
+        entities.add(new PermanentParticleInstance(Particles.MAGIC1, System.currentTimeMillis(), 
+                6.5, 5.5, scaleInPixel, width, height, 0));
+        entities.add(new PermanentParticleInstance(Particles.MAGIC2, System.currentTimeMillis(), 
+                7.5, 5.5, scaleInPixel, width, height, 0));
+        entities.add(new PermanentParticleInstance(Particles.SMOKE, System.currentTimeMillis(), 
+                8.5, 5.5, scaleInPixel, width, height, 0));
+    }
+    
     private void startAnimationLoop() {
-        try {
-            GraphicsContext layerMiddle = canvasMiddle.getGraphicsContext2D();
-            playerModel.put(PLAYER_ENTITY_ID, 
-                    new PlayerModel(PLAYER_ENTITY_ID, "null", scale, "player_no1", width, height));
-            
-            long startNanoTime = System.nanoTime();
-            animationTimer = new AnimationTimer() {
-                public void handle(long currentNanoTime) {
-                    double t = (currentNanoTime - startNanoTime) / 1000000000.0;
-                    
-                    PlayerModel me = playerModel.get(PLAYER_ENTITY_ID);
+        GraphicsContext layerMiddle = canvasMiddle.getGraphicsContext2D();
+        playerModel.put(PLAYER_ENTITY_ID, 
+                new PlayerModel(PLAYER_ENTITY_ID, "null", scale, "player_no1", width, height));
+//        entities.add(getMe());
+        
+        long startNanoTime = System.nanoTime();
+        animationTimer = new AnimationTimer() {
+            public void handle(long currentNanoTime) {
+                double t = (currentNanoTime - startNanoTime) / 1000000000.0;
+                
+                PlayerModel me = playerModel.get(PLAYER_ENTITY_ID);
 
-                    applyInput(me);
+                applyInput(me);
 
-                    if (background != null)
-                        background.draw(me.getX(), me.getY());
-                    if (foreground != null)
-                        foreground.draw(me.getX(), me.getY());
-                    playerInfoComponent.updateMapCanvas(
-                            me.getX() / scaleInPixel, 
-                            me.getY() / scaleInPixel);
-                    
+                if (background != null)
+                    background.draw(me.getX(), me.getY());
+                if (foreground != null)
+                    foreground.draw(me.getX(), me.getY());
+                playerInfoComponent.updateMapCanvas(
+                        me.getX() / scaleInPixel, 
+                        me.getY() / scaleInPixel);
 
-                    layerMiddle.clearRect(0, 0, width, height);
-                    GraphicsContext topLayer = playerNames.getGraphicsContext2D();
-                    topLayer.clearRect(0, 0, width, height);
-                    entities.stream()
-                            .filter(pm -> pm != null)
-                            .sorted((a, b) -> Double.compare(a.getY(), b.getY()))
-                            .forEachOrdered(entity -> {
-                                entity.calc();
-                                entity.draw(layerMiddle, topLayer, t, me.getX(), me.getY());
-                            });
-                }
+                layerMiddle.clearRect(0, 0, width, height);
+                GraphicsContext topLayer = playerNames.getGraphicsContext2D();
+                topLayer.clearRect(0, 0, width, height);
+                entities.stream()
+                        .filter(pm -> pm != null)
+                        .filter(pm -> !pm.isFinished())
+                        .sorted((a, b) -> Double.compare(a.getOrder(), b.getOrder()))
+                        .forEachOrdered(entity -> {
+                            entity.calc();
+                            entity.draw(layerMiddle, topLayer, t, me.getX(), me.getY());
+                        });
+            }
 
-            };
-            animationTimer.start();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        };
+        animationTimer.start();
     }
 
+    private void startEntityGrabageCollector() {
+        entityGrabageCollector = HacknslashApplication.ASYNC.scheduleAtFixedRate(
+                () -> Platform.runLater(() -> entities.removeIf(x -> x.isFinished())), 
+                5, 10, TimeUnit.SECONDS); 
+    }
+    
     private void initVars() {
         height = 800;
         width = 1280;
         scale = 2;
         scaleInPixel = scale * 32;
         playerModel = new ConcurrentHashMap<>();
+        entities = Collections.synchronizedList(new LinkedList<>());
     }
 
     private AnchorPane initBody() {
@@ -224,26 +272,47 @@ public class IngameWindow extends CustomWindow {
         
         if (input.contains("LEFT")) {
             dX -= 1;
-            direction = 1;
+            direction = PlayerModel.DIRECTION_LEFT;
             walking = true;
         }
         if (input.contains("RIGHT")) {
             dX += 1;
-            direction = 2;
+            direction = PlayerModel.DIRECTION_RIGHT;
             walking = true;
         }
         if (input.contains("UP")) {
             dY -= 1;
-            direction = 3;
+            direction = PlayerModel.DIRECTION_BACK;
             walking = true;
         }
         if (input.contains("DOWN")) {
             dY += 1;
-            direction = 0;
+            direction = PlayerModel.DIRECTION_STAND;
             walking = true;
         }
         if (input.contains("T")) {
             chatComponent.allow();
+        }
+        if (input.contains("F1")) {
+            skillsComponent.handleSkill(1);
+        }
+        if (input.contains("F2")) {
+            skillsComponent.handleSkill(2);
+        }
+        if (input.contains("F3")) {
+            skillsComponent.handleSkill(3);
+        }
+        if (input.contains("F4")) {
+            skillsComponent.handleSkill(4);
+        }
+        if (input.contains("F5")) {
+            skillsComponent.handleSkill(5);
+        }
+        if (input.contains("F6")) {
+            skillsComponent.handleSkill(6);
+        }
+        if (input.contains("F7")) {
+            skillsComponent.handleSkill(7);
         }
         
         me.setX(dX);
@@ -267,10 +336,7 @@ public class IngameWindow extends CustomWindow {
     public void loadMap(byte[] o) {
         try {
             MapLoadPacket packet = mapper.readValue(o, MapLoadPacket.class);
-            BufferedImage image = ImageIO.read(PlayerModel.class
-                    .getResource("/assets/textures/" + packet.getTexture() + ".png"));
-            BufferedImage rescaled = ImageUtil.scale(image, image.getType(), scale);
-            Image texture = SwingFXUtils.toFXImage(rescaled, null);
+            Image texture = ImageUtil.loadImage("/assets/textures/" + packet.getTexture() + ".png", scale);
             
             background = new StaticLayer(canvasBackground.getGraphicsContext2D(), 
                     packet.getBackground(), texture, 64, width, height, 0, 0);

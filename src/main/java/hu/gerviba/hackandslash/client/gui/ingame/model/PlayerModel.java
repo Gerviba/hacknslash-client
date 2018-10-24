@@ -1,13 +1,7 @@
 package hu.gerviba.hackandslash.client.gui.ingame.model;
 
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-
-import javax.imageio.ImageIO;
-
 import hu.gerviba.hackandslash.client.ImageUtil;
 import hu.gerviba.hackandslash.client.packets.TelemetryPacket;
-import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
@@ -44,6 +38,11 @@ public class PlayerModel implements RenderableModel {
         TEXTURE_BACK
     };
     
+    public static int DIRECTION_STAND = 0;
+    public static int DIRECTION_LEFT = 1;
+    public static int DIRECTION_RIGHT = 2;
+    public static int DIRECTION_BACK = 3;
+    
     private static final Color BLACK_COLOR = new Color(0, 0, 0, 1);
     private static final Color TRANSPARENT_BLACK_COLOR = new Color(0, 0, 0, 0.5);
     private static final Color WHITE_COLOR = new Color(1, 1, 1, 1);
@@ -61,23 +60,18 @@ public class PlayerModel implements RenderableModel {
     
     private double targetX;
     private double targetY;
-    private int height;
-    private int width;
+    private int canvasWidth;
+    private int canvasHeight;
     
     private Image texture;
     
-    public PlayerModel(long entityId, String name, int scale, String texture, int width, int height) throws IOException {
+    public PlayerModel(long entityId, String name, int scale, String texture, int width, int height) {
         this.entityId = entityId;
         this.scale = scale * 32;
-        this.width = width;
-        this.height = height;
-        this.name = name;
-        
-        BufferedImage image = ImageIO.read(PlayerModel.class
-                .getResource("/assets/characters/" + texture + ".png"));
-        BufferedImage rescaled = ImageUtil.scale(image, image.getType(), scale);
-        
-        this.texture = SwingFXUtils.toFXImage(rescaled, null);
+        this.canvasWidth = width;
+        this.canvasHeight = height;
+        this.name = name;        
+        this.texture = ImageUtil.loadImage("/assets/characters/" + texture + ".png", scale);
     }
     
     @Override
@@ -93,8 +87,8 @@ public class PlayerModel implements RenderableModel {
                 scale * PLAYER_TEXTURE[direction][(walking ? state : 1)][0], 
                 scale * PLAYER_TEXTURE[direction][(walking ? state : 1)][1], 
                 scale, scale, 
-                this.x - dX  + (width / 2), 
-                this.y - dY  + (height / 2), 
+                this.x - dX  + (canvasWidth / 2) - (scale / 2), 
+                this.y - dY  + (canvasHeight / 2) - scale, 
                 scale, scale);
     }
     
@@ -102,24 +96,24 @@ public class PlayerModel implements RenderableModel {
         gc.setStroke(BLACK_COLOR);
         gc.setFill(WHITE_COLOR);
         gc.strokeText(name, 
-                this.x - dX  + (width / 2) + (scale / 2), 
-                this.y - dY  + (height / 2) - 12);
+                this.x - dX  + (canvasWidth / 2) + (scale / 2) - (scale / 2), 
+                this.y - dY  + (canvasHeight / 2) - 12 - scale);
         gc.fillText(name, 
-                this.x - dX  + (width / 2) + (scale / 2), 
-                this.y - dY  + (height / 2) - 12);
+                this.x - dX  + (canvasWidth / 2) + (scale / 2) - (scale / 2), 
+                this.y - dY  + (canvasHeight / 2) - 12 - scale);
     }
 
     private void renderHPBar(GraphicsContext gc, double dX, double dY) {
         gc.setFill(TRANSPARENT_BLACK_COLOR);
         gc.fillRect(
-                this.x - dX  + (width / 2) + (scale * 0.125) - 1, 
-                this.y - dY  + (height / 2) - 10,
+                this.x - dX  + (canvasWidth / 2) + (scale * 0.125) - 1 - (scale / 2), 
+                this.y - dY  + (canvasHeight / 2) - 10- scale,
                 scale * 0.75 + 2, 6);
         
         gc.setFill(RED_COLOR);
         gc.fillRect(
-                this.x - dX  + (width / 2) + (scale * 0.125), 
-                this.y - dY  + (height / 2) - 9,
+                this.x - dX  + (canvasWidth / 2) + (scale * 0.125) - (scale / 2), 
+                this.y - dY  + (canvasHeight / 2) - 9 - scale,
                 scale * 0.75 * hp, 4);
     }
     
@@ -146,6 +140,17 @@ public class PlayerModel implements RenderableModel {
         }
     }
     
+    @Override
+    public double getOrder() {
+//        System.out.println("> " + (y + scale - 2));
+        return y - scale - 2;
+    }
+
+    @Override
+    public boolean isFinished() {
+        return false;
+    }
+    
     public void setX(double x) {
         this.x = x;
         this.targetX = x;
@@ -154,6 +159,14 @@ public class PlayerModel implements RenderableModel {
     public void setY(double y) {
         this.y = y;
         this.targetY = y;
+    }
+    
+    public double getGeneralX() {
+        return this.x / scale;
+    }
+
+    public double getGeneralY() {
+        return this.y / scale;
     }
     
 }

@@ -1,5 +1,5 @@
 package hu.gerviba.hackandslash.client.gui.ingame;
 
-public class InventoryHud {
+public class InvHud {
 
 }

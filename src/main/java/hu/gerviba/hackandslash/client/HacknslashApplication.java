@@ -19,7 +19,6 @@ public class HacknslashApplication extends Application {
 
     public static final ObjectMapper JSON_MAPPER = new ObjectMapper();
     
-    @Deprecated
     public static final ScheduledExecutorService ASYNC = Executors.newSingleThreadScheduledExecutor();
     
     @Getter
