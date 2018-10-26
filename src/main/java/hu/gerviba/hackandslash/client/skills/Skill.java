@@ -2,7 +2,6 @@ package hu.gerviba.hackandslash.client.skills;
 
 import hu.gerviba.hackandslash.client.HacknslashApplication;
 import hu.gerviba.hackandslash.client.gui.ingame.IngameWindow;
-import hu.gerviba.hackandslash.client.gui.ingame.model.PlayerModel;
 import hu.gerviba.hackandslash.client.packets.TemplatePacketBuilder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

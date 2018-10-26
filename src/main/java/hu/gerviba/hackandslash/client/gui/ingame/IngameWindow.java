@@ -28,6 +28,7 @@ import hu.gerviba.hackandslash.client.packets.TelemetryPacket;
 import hu.gerviba.hackandslash.client.packets.TelemetryPacket.PlayerModelStatus;
 import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -55,6 +56,9 @@ public class IngameWindow extends CustomWindow {
 
     @Getter
     private SkillsHud skillsComponent;
+    
+    @Getter
+    private InventoryHud inventoryComponent;
     
     @Getter
     private Map<Long, PlayerModel> playerModel;
@@ -141,6 +145,16 @@ public class IngameWindow extends CustomWindow {
         
         chatComponent = new ChatHud();
         ingame.getChildren().add(chatComponent.toPane());
+        
+        inventoryComponent = new InventoryHud(this);
+        ingame.getChildren().add(inventoryComponent.toPane());
+
+        StackPane highestLayer = new StackPane();
+        highestLayer.setMaxWidth(0);
+        highestLayer.setMaxHeight(0);
+        ingame.getChildren().add(highestLayer);
+        inventoryComponent.setHighestLayer(highestLayer);
+        StackPane.setAlignment(highestLayer, Pos.TOP_LEFT);
         
         addParticles();
         
@@ -293,26 +307,32 @@ public class IngameWindow extends CustomWindow {
         if (input.contains("T")) {
             chatComponent.allow();
         }
+        if (input.contains("I")) {
+            inventoryComponent.show();
+        }
+        if (input.contains("ESCAPE")) {
+            inventoryComponent.close();
+        }
         if (input.contains("F1")) {
-            skillsComponent.handleSkill(1);
+            skillsComponent.handleSkill(0);
         }
         if (input.contains("F2")) {
-            skillsComponent.handleSkill(2);
+            skillsComponent.handleSkill(1);
         }
         if (input.contains("F3")) {
-            skillsComponent.handleSkill(3);
+            skillsComponent.handleSkill(2);
         }
         if (input.contains("F4")) {
-            skillsComponent.handleSkill(4);
+            skillsComponent.handleSkill(3);
         }
         if (input.contains("F5")) {
-            skillsComponent.handleSkill(5);
+            skillsComponent.handleSkill(4);
         }
         if (input.contains("F6")) {
-            skillsComponent.handleSkill(6);
+            skillsComponent.handleSkill(5);
         }
         if (input.contains("F7")) {
-            skillsComponent.handleSkill(7);
+            skillsComponent.handleSkill(6);
         }
         
         me.setX(dX);

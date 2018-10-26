@@ -7,6 +7,9 @@ import java.util.Map;
 import hu.gerviba.hackandslash.client.HacknslashApplication;
 import hu.gerviba.hackandslash.client.ImageUtil;
 import hu.gerviba.hackandslash.client.gui.CustomComponent;
+import hu.gerviba.hackandslash.client.gui.ingame.item.ItemInstance;
+import hu.gerviba.hackandslash.client.gui.ingame.item.ItemType;
+import hu.gerviba.hackandslash.client.gui.ingame.item.Items;
 import hu.gerviba.hackandslash.client.packets.SkillPacket;
 import hu.gerviba.hackandslash.client.skills.ThunderSkill;
 import hu.gerviba.hackandslash.client.skills.FlameCircleSkill;
@@ -42,10 +45,11 @@ public class SkillsHud implements CustomComponent {
     private AnchorPane skillsWrapper;
     private Canvas[] itemCanvases;
     private Pane[] itemBackgrounds;
+    private ItemType[] itemsInMenu;
     
     private final IngameWindow ingame;
     private final Map<Integer, Skill> skills = new HashMap<>();
-    private final Map<Integer, Skill> shortcut = new HashMap<>();
+    private final Map<String, Integer> mapper = new HashMap<>();
     
     public SkillsHud(IngameWindow ingame) {
         this.ingame = ingame;
@@ -71,6 +75,7 @@ public class SkillsHud implements CustomComponent {
         
         itemCanvases = new Canvas[ITEM_COUNT];
         itemBackgrounds = new Pane[ITEM_COUNT];
+        itemsInMenu = new ItemType[ITEM_COUNT];
         for (int i = 0; i < ITEM_COUNT; ++i) {
             StackPane item = new StackPane();
             item.setPrefWidth(ITEM_SIZE + 8);
@@ -107,39 +112,38 @@ public class SkillsHud implements CustomComponent {
         this.skills.put(202, new ManaPotion(202, 0, 2500));
         this.skills.put(203, new ManaPotion(203, 0, 10000));
         
-        addItem(0, 0, 0, ITEM_SIZE);
-        addItem(1, 1, 0, ITEM_SIZE);
-        addItem(2, 2, 0, ITEM_SIZE);
-        addItem(3, 3, 0, ITEM_SIZE);
-        addItem(4, 4, 0, ITEM_SIZE);
-        addItem(5, 1, 3, ITEM_SIZE);
-        addItem(6, 0, 4, ITEM_SIZE);
+//        setItem(0, 0, 0, ITEM_SIZE);
+//        setItem(1, 1, 0, ITEM_SIZE);
+//        setItem(2, 2, 0, ITEM_SIZE);
+//        setItem(3, 3, 0, ITEM_SIZE);
+//        setItem(4, 4, 0, ITEM_SIZE);
+//        setItem(5, 1, 3, ITEM_SIZE);
+//        setItem(6, 0, 4, ITEM_SIZE);
         
-        this.shortcut.put(1, this.skills.get(1));
-        this.shortcut.put(2, this.skills.get(2));
-        this.shortcut.put(3, this.skills.get(3));
-        this.shortcut.put(4, this.skills.get(4));
-        this.shortcut.put(5, this.skills.get(5));
-        this.shortcut.put(6, this.skills.get(102));
-        this.shortcut.put(7, this.skills.get(201));
+        for (int i = 1; i <= 7; ++i)
+            mapper.put("F" + i, i - 1);
         
         return skillsWrapper;
     }
 
-    private void addItem(int slot, int x, int y, int size) {
-        Image image = ImageUtil.loadImage("/assets/items/items.png", 2);
+    private void setItem(int slot, int x, int y, int size) {
         itemCanvases[slot].getGraphicsContext2D().clearRect(0, 0, ITEM_SIZE, ITEM_SIZE);
-        itemCanvases[slot].getGraphicsContext2D().drawImage(image, 
+        itemCanvases[slot].getGraphicsContext2D().drawImage(Items.TEXTURE, 
                 x * size, y * size, 
                 size, size, 
                 0, 0, 
                 size, size);
     }
 
-    public void handleSkill(int skillUid) {
-        if (shortcut.containsKey(skillUid) && shortcut.get(skillUid).canCast()) {
-            shortcut.get(skillUid).send();
-            reloadTimer(itemBackgrounds[skillUid - 1], shortcut.get(skillUid));
+    public void handleSkill(int slotUsed) {
+        if (itemsInMenu[slotUsed] == null)
+            return;
+        int skillUid = itemsInMenu[slotUsed].getSkillUid();
+        if (skillUid < 1)
+            return;
+        if (skills.containsKey(skillUid) && skills.get(skillUid).canCast()) {
+            skills.get(skillUid).send();
+            reloadTimer(itemBackgrounds[slotUsed], skills.get(skillUid));
         }
     }
     
@@ -161,6 +165,19 @@ public class SkillsHud implements CustomComponent {
             skills.get(packet.getSkillUid()).cast(packet.getX(), packet.getY(), packet.getDirection(), ingame);
         } catch (IOException e) {
             log.error("Failed to cast skill", e);
+        }
+    }
+
+    public void setItem(String key, ItemInstance item) {
+        if (mapper.containsKey(key)) {
+            if (item != null) {
+                setItem(mapper.get(key), item.getType().getTextureX(), item.getType().getTextureY(), ITEM_SIZE);
+                itemsInMenu[mapper.get(key)] = item.getType();
+            } else {
+                itemCanvases[mapper.get(key)].getGraphicsContext2D().clearRect(0, 0, ITEM_SIZE, ITEM_SIZE);
+                itemsInMenu[mapper.get(key)] = null;
+            }
+            return;
         }
     }
 

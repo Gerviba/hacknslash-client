@@ -290,6 +290,68 @@
 	-fx-effect: dropshadow(one-pass-box, rgba(0,0,0,0.8), 0, 0, 1, 1);
 }
 
+.inventory {
+	-fx-background-color: #4E4A4E;
+	-fx-background-insets: -12px;
+	-fx-border-width: 4px;
+	-fx-border-color: #000000;
+	-fx-border-insets: -12px;
+}
+
+.inventory .item-scroll {
+	-fx-background-color: rgba(0,0,0,0);
+}
+
+.inventory .wear,
+.inventory .skill,
+.inventory .items-storage {
+
+}
+
+.inventory .note-text,
+.inventory .count-text {
+	-fx-font: normal 16px 'Roboto Mono';
+	-fx-fill: #FFFFFF;
+	-fx-effect: dropshadow(one-pass-box, rgba(0,0,0,0.8), 0, 0, 1, 1);
+}
+
+.inventory .wear .item-comp,
+.inventory .skill .item-comp,
+.inventory .items-storage .item-comp {
+	-fx-background-color: rgba(0,0,0,0.3);
+}
+
+.inventory .items-scroll {
+	-fx-focus-color: transparent;
+	-fx-faint-focus-color: transparent;
+	-fx-background-color: transparent;
+	-fx-border-width: 0;
+}
+
+.inventory .items-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.description-box {
+	-fx-background-color: #000000;
+	-fx-background-insets: -12px;
+	-fx-border-width: 2px;
+	-fx-border-color: #FFFFFF;
+	-fx-border-insets: -8px;
+}
+
+.description-box .title {
+	-fx-font: normal 16px 'Roboto Mono Bold';
+	-fx-fill: #FFFFFF;
+	-fx-effect: dropshadow(one-pass-box, rgba(0,0,0,0.8), 0, 0, 1, 1);
+}
+
+.description-box .text {
+	-fx-font: normal 16px 'Roboto Mono';
+	-fx-fill: #FFFFFF;
+	-fx-effect: dropshadow(one-pass-box, rgba(0,0,0,0.8), 0, 0, 1, 1);
+}
+
 .scroll-bar {
 	-fx-background-color: transparent;
 	-fx-background-radius: 0;
