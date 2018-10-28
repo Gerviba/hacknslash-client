@@ -1,5 +1,8 @@
 package hu.gerviba.hackandslash.client.gui.ingame;
 
+import java.util.Arrays;
+import java.util.List;
+
 import hu.gerviba.hackandslash.client.gui.CustomComponent;
 import hu.gerviba.hackandslash.client.gui.ingame.item.ItemInstance;
 import hu.gerviba.hackandslash.client.gui.ingame.item.ItemType;
@@ -27,6 +30,9 @@ public class InventoryHud implements CustomComponent {
         @Getter
         private final String note;
         
+        @Getter
+        private final List<String> allowedTypes;
+        
         private Text noteText;
         private Text countText;
         private Canvas canvas;
@@ -34,6 +40,7 @@ public class InventoryHud implements CustomComponent {
         
         public ItemComponent() {
             this.note = "";
+            this.allowedTypes = Items.ALL_TYPES;
         }
         
         public void setItem(ItemInstance item) {
@@ -59,6 +66,10 @@ public class InventoryHud implements CustomComponent {
         }
         
         public void switchItems(ItemComponent other) {
+            if (!(other.item == null || this.allowedTypes.contains(other.item.getType().getType())) ||
+                    !(this.item == null || other.allowedTypes.contains(this.item.getType().getType())))
+                return;
+            
             ItemInstance temp = this.item;
             this.item = other.item;
             other.setItem(temp);
@@ -118,6 +129,8 @@ public class InventoryHud implements CustomComponent {
                     descriptionLore.setText(item.getType().getLore().replace("|", "\n"));
                     descriptionBox.add(descriptionLore, 0, 1);
                 }
+                descriptionBox.setTranslateX(event.getSceneX() + 30);
+                descriptionBox.setTranslateY(event.getSceneY());
                 descriptionBox.setVisible(true);
             });
             pane.setOnMouseExited(event -> descriptionBox.setVisible(false));
@@ -188,11 +201,11 @@ public class InventoryHud implements CustomComponent {
         wearWrapper.setHgap(8);
         wearWrapper.setVgap(8);
         
-        wearWrapper.add((helmet = new ItemComponent("HELMET")).toPane(), 1, 0);
-        wearWrapper.add((armor = new ItemComponent("WEAPON")).toPane(), 0, 1);
-        wearWrapper.add((boots = new ItemComponent("ARMOR")).toPane(), 1, 1);
-        wearWrapper.add((weapon = new ItemComponent("RING")).toPane(), 2, 1);
-        wearWrapper.add((ring = new ItemComponent("BOOTS")).toPane(), 1, 2);
+        wearWrapper.add((helmet = new ItemComponent("HELMET", Arrays.asList("helmet"))).toPane(), 1, 0);
+        wearWrapper.add((armor = new ItemComponent("WEAPON", Arrays.asList("weapon"))).toPane(), 0, 1);
+        wearWrapper.add((boots = new ItemComponent("ARMOR", Arrays.asList("armor"))).toPane(), 1, 1);
+        wearWrapper.add((weapon = new ItemComponent("RING", Arrays.asList("ring"))).toPane(), 2, 1);
+        wearWrapper.add((ring = new ItemComponent("BOOTS", Arrays.asList("boots"))).toPane(), 1, 2);
         return wearWrapper;
     }
     
@@ -205,7 +218,8 @@ public class InventoryHud implements CustomComponent {
         
         skills = new ItemComponent[MAX_SKILLS];
         for (int i = 0; i < MAX_SKILLS; ++i)
-            skillsWrapper.add((skills[i] = new ItemComponent("F" + (i + 1))).toPane(), i % 3, i / 3);
+            skillsWrapper.add((skills[i] = new ItemComponent("F" + (i + 1), 
+                    Arrays.asList("skill", "potion", "weapon"))).toPane(), i % 3, i / 3);
         
         return skillsWrapper;
     }

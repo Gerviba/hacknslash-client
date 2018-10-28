@@ -140,7 +140,6 @@ public class WebSocketConnectionThread extends Thread {
 
             @Override
             public void handleFrame(StompHeaders stompHeaders, Object o) {
-                log.info("Chat " + new String((byte[]) o));
                 Platform.runLater(() -> ingame.getChatComponent().appendMessage((byte[]) o));
             }
             
@@ -157,7 +156,6 @@ public class WebSocketConnectionThread extends Thread {
 
             @Override
             public void handleFrame(StompHeaders stompHeaders, Object o) {
-                log.info("Private chat " + new String((byte[]) o));
                 Platform.runLater(() -> ingame.getChatComponent().appendMessage((byte[]) o));
             }
             
@@ -174,7 +172,6 @@ public class WebSocketConnectionThread extends Thread {
 
             @Override
             public void handleFrame(StompHeaders stompHeaders, Object o) {
-                log.info("Skill " + new String((byte[]) o));
                 Platform.runLater(() -> ingame.getSkillsComponent().applySkill((byte[]) o));
             }
             

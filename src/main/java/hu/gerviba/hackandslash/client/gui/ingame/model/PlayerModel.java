@@ -1,11 +1,12 @@
 package hu.gerviba.hackandslash.client.gui.ingame.model;
 
-import hu.gerviba.hackandslash.client.ImageUtil;
+import hu.gerviba.hackandslash.client.gui.ingame.item.Items;
 import hu.gerviba.hackandslash.client.packets.TelemetryPacket;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 import lombok.Data;
+import lombok.Setter;
 
 @Data
 public class PlayerModel implements RenderableModel {
@@ -57,21 +58,28 @@ public class PlayerModel implements RenderableModel {
     private volatile int direction;
     private volatile boolean walking;
     private volatile float hp;
+
+    private volatile String base = "null";
+    private volatile String weapon = "null";
+    private volatile String helmet = "null";
+    private volatile String armor = "null";
+    private volatile String boots = "null";
     
     private double targetX;
     private double targetY;
     private int canvasWidth;
     private int canvasHeight;
     
+    @Setter
     private Image texture;
     
-    public PlayerModel(long entityId, String name, int scale, String texture, int width, int height) {
+    public PlayerModel(long entityId, String name, int scale, Image texture, int width, int height) {
         this.entityId = entityId;
         this.scale = scale * 32;
         this.canvasWidth = width;
         this.canvasHeight = height;
-        this.name = name;        
-        this.texture = ImageUtil.loadImage("/assets/characters/" + texture + ".png", scale);
+        this.name = name;
+        this.texture = texture;
     }
     
     @Override
@@ -127,6 +135,20 @@ public class PlayerModel implements RenderableModel {
         this.direction = pms.getDirection();
         this.walking = pms.isWalking();
         this.hp = pms.getHp();
+        
+        if (!(this.weapon.equals(pms.getWeapon())
+                || this.helmet.equals(pms.getHelmet())
+                || this.armor.equals(pms.getArmor())
+                || this.boots.equals(pms.getBoots())
+                || this.base.equals(pms.getBase()))) {
+            
+            this.weapon = pms.getWeapon() == null ? "null" : pms.getWeapon();
+            this.helmet = pms.getHelmet() == null ? "null" : pms.getHelmet();
+            this.armor = pms.getArmor() == null ? "null" : pms.getArmor();
+            this.boots = pms.getBoots() == null ? "null" : pms.getBoots();
+            this.base = pms.getBase() == null ? "player_no1" : pms.getBase();
+            this.texture = Items.getImageByComponents(base, weapon, helmet, armor, boots);
+        }
     }
 
     @Override
@@ -142,7 +164,6 @@ public class PlayerModel implements RenderableModel {
     
     @Override
     public double getOrder() {
-//        System.out.println("> " + (y + scale - 2));
         return y - scale - 2;
     }
 

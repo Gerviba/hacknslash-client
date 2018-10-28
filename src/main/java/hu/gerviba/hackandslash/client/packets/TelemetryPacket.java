@@ -19,6 +19,12 @@ public class TelemetryPacket {
         private int direction;
         private boolean walking;
         private float hp;
+        
+        private String base;
+        private String weapon;
+        private String helmet;
+        private String armor;
+        private String boots;
     }
     
     private List<PlayerModelStatus> players;

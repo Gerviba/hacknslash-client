@@ -5,19 +5,18 @@ import java.util.HashMap;
 import java.util.Map;
 
 import hu.gerviba.hackandslash.client.HacknslashApplication;
-import hu.gerviba.hackandslash.client.ImageUtil;
 import hu.gerviba.hackandslash.client.gui.CustomComponent;
 import hu.gerviba.hackandslash.client.gui.ingame.item.ItemInstance;
 import hu.gerviba.hackandslash.client.gui.ingame.item.ItemType;
 import hu.gerviba.hackandslash.client.gui.ingame.item.Items;
 import hu.gerviba.hackandslash.client.packets.SkillPacket;
-import hu.gerviba.hackandslash.client.skills.ThunderSkill;
 import hu.gerviba.hackandslash.client.skills.FlameCircleSkill;
 import hu.gerviba.hackandslash.client.skills.HealthPotion;
 import hu.gerviba.hackandslash.client.skills.ManaPotion;
 import hu.gerviba.hackandslash.client.skills.PoisonedAreaSkill;
 import hu.gerviba.hackandslash.client.skills.PurpleMagicSkill;
 import hu.gerviba.hackandslash.client.skills.Skill;
+import hu.gerviba.hackandslash.client.skills.ThunderSkill;
 import hu.gerviba.hackandslash.client.skills.WaterBeamSkill;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
@@ -25,7 +24,6 @@ import javafx.animation.Timeline;
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
 import javafx.scene.canvas.Canvas;
-import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
@@ -111,14 +109,6 @@ public class SkillsHud implements CustomComponent {
         this.skills.put(201, new ManaPotion(201, 0, 1000));
         this.skills.put(202, new ManaPotion(202, 0, 2500));
         this.skills.put(203, new ManaPotion(203, 0, 10000));
-        
-//        setItem(0, 0, 0, ITEM_SIZE);
-//        setItem(1, 1, 0, ITEM_SIZE);
-//        setItem(2, 2, 0, ITEM_SIZE);
-//        setItem(3, 3, 0, ITEM_SIZE);
-//        setItem(4, 4, 0, ITEM_SIZE);
-//        setItem(5, 1, 3, ITEM_SIZE);
-//        setItem(6, 0, 4, ITEM_SIZE);
         
         for (int i = 1; i <= 7; ++i)
             mapper.put("F" + i, i - 1);

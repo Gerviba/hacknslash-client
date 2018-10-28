@@ -17,6 +17,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import hu.gerviba.hackandslash.client.HacknslashApplication;
 import hu.gerviba.hackandslash.client.ImageUtil;
 import hu.gerviba.hackandslash.client.gui.CustomWindow;
+import hu.gerviba.hackandslash.client.gui.ingame.item.Items;
 import hu.gerviba.hackandslash.client.gui.ingame.model.MiddleModel;
 import hu.gerviba.hackandslash.client.gui.ingame.model.PermanentParticleInstance;
 import hu.gerviba.hackandslash.client.gui.ingame.model.PlayerModel;
@@ -170,10 +171,6 @@ public class IngameWindow extends CustomWindow {
     }
     
     private void addParticles() {
-//        Particle anim = new AnimatedParticle(texture, 0, 9, 24, 3, 500);
-//        Particle anim = new AnimatedParticle(texture, 9, 6, 24, 2, 250);
-//        Particle anim = new AnimatedParticle(texture, 6, 7, 24, 3, 250);
-        
         entities.add(new PermanentParticleInstance(Particles.WATER, System.currentTimeMillis(), 
                 3.5, 5.5, scaleInPixel, width, height, 0));
         entities.add(new PermanentParticleInstance(Particles.POISON, System.currentTimeMillis(), 
@@ -191,8 +188,9 @@ public class IngameWindow extends CustomWindow {
     private void startAnimationLoop() {
         GraphicsContext layerMiddle = canvasMiddle.getGraphicsContext2D();
         playerModel.put(PLAYER_ENTITY_ID, 
-                new PlayerModel(PLAYER_ENTITY_ID, "null", scale, "player_no1", width, height));
-//        entities.add(getMe());
+                new PlayerModel(PLAYER_ENTITY_ID, "null", scale, 
+                        Items.getImageByComponents("player_no1", "null", "null", "null", "null"), 
+                        width, height));
         
         long startNanoTime = System.nanoTime();
         animationTimer = new AnimationTimer() {
@@ -393,8 +391,9 @@ public class IngameWindow extends CustomWindow {
                     if (playerModel.containsKey(pms.getEntityId())) {
                         playerModel.get(pms.getEntityId()).update(pms);
                     } else {
-                        PlayerModel player = new PlayerModel(pms.getEntityId(), pms.getName(), 
-                                scale, "player_no1", width, height);
+                        PlayerModel player = new PlayerModel(pms.getEntityId(), pms.getName(), scale, 
+                                Items.getImageByComponents("player_no1", "null", "null", "null", "null"), 
+                                width, height);
                         player.update(pms);
                         player.setX(pms.getX());
                         player.setY(pms.getY());

@@ -11,8 +11,10 @@ public class TemplatePacketBuilder {
     }
     
     public static byte[] buildTelemetry(PlayerModel player) {
-        return String.format("{\"x\":\"%f\",\"y\":\"%f\",\"direction\":\"%d\",\"walking\":%s}", 
-                player.getX(), player.getY(), player.getDirection(), player.isWalking() ? "true" : "false")
+        return String.format("{\"x\":\"%f\",\"y\":\"%f\",\"direction\":\"%d\",\"walking\":%s,\"base\":\"%s\","
+                + "\"weapon\":\"%s\",\"helmet\":\"%s\",\"armor\":\"%s\",\"boots\":\"%s\"}", 
+                player.getX(), player.getY(), player.getDirection(), player.isWalking() ? "true" : "false",
+                player.getBase(), player.getWeapon(), player.getHelmet(), player.getWeapon(), player.getBoots())
                 .getBytes();
     }
 
