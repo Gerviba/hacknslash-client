@@ -135,18 +135,18 @@ public class PlayerModel implements RenderableModel {
         this.direction = pms.getDirection();
         this.walking = pms.isWalking();
         this.hp = pms.getHp();
-        
-        if (!(this.weapon.equals(pms.getWeapon())
-                || this.helmet.equals(pms.getHelmet())
-                || this.armor.equals(pms.getArmor())
-                || this.boots.equals(pms.getBoots())
-                || this.base.equals(pms.getBase()))) {
+
+        if (!this.weapon.equals(pms.getWeapon())
+                || !this.helmet.equals(pms.getHelmet())
+                || !this.armor.equals(pms.getArmor())
+                || !this.boots.equals(pms.getBoots())
+                || !this.base.equals(pms.getBase())) {
             
-            this.weapon = pms.getWeapon() == null ? "null" : pms.getWeapon();
-            this.helmet = pms.getHelmet() == null ? "null" : pms.getHelmet();
-            this.armor = pms.getArmor() == null ? "null" : pms.getArmor();
-            this.boots = pms.getBoots() == null ? "null" : pms.getBoots();
-            this.base = pms.getBase() == null ? "player_no1" : pms.getBase();
+            this.weapon = pms.getWeapon();
+            this.helmet = pms.getHelmet();
+            this.armor = pms.getArmor();
+            this.boots = pms.getBoots();
+            this.base = pms.getBase();
             this.texture = Items.getImageByComponents(base, weapon, helmet, armor, boots);
         }
     }

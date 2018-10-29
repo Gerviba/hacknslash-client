@@ -11,10 +11,8 @@ public class TemplatePacketBuilder {
     }
     
     public static byte[] buildTelemetry(PlayerModel player) {
-        return String.format("{\"x\":\"%f\",\"y\":\"%f\",\"direction\":\"%d\",\"walking\":%s,\"base\":\"%s\","
-                + "\"weapon\":\"%s\",\"helmet\":\"%s\",\"armor\":\"%s\",\"boots\":\"%s\"}", 
-                player.getX(), player.getY(), player.getDirection(), player.isWalking() ? "true" : "false",
-                player.getBase(), player.getWeapon(), player.getHelmet(), player.getWeapon(), player.getBoots())
+        return String.format("{\"x\":\"%f\",\"y\":\"%f\",\"direction\":\"%d\",\"walking\":%s}", 
+                player.getX(), player.getY(), player.getDirection(), player.isWalking() ? "true" : "false")
                 .getBytes();
     }
 
@@ -25,6 +23,10 @@ public class TemplatePacketBuilder {
 
     public static byte[] buildSkillPacket(int skillUid) {
         return String.format("{\"skillUid\":%d}", skillUid).getBytes();
+    }
+
+    public static byte[] buildChangeItem(int from, int to) {
+        return String.format("{\"slotFrom\":%d,\"slotTo\":%d}", from, to).getBytes();
     }
     
 }

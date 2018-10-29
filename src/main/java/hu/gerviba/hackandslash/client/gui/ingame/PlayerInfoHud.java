@@ -2,6 +2,8 @@ package hu.gerviba.hackandslash.client.gui.ingame;
 
 import java.io.IOException;
 
+import com.oracle.tools.packager.Log;
+
 import hu.gerviba.hackandslash.client.HacknslashApplication;
 import hu.gerviba.hackandslash.client.gui.CustomComponent;
 import hu.gerviba.hackandslash.client.packets.MapLoadPacket.MapLayerInfo;
@@ -45,8 +47,6 @@ public class PlayerInfoHud implements CustomComponent {
         hud.add(generateManaBar(), 1, 2);
         hud.add(generateExpBar(), 1, 3);
         hud.add(new Text(), 1, 4);
-        
-        HacknslashApplication.getInstance().getConnection().appendTask(stomp -> stomp.send("/app/self", "{}".getBytes()));
         
         return hudWarpper;
     }
@@ -164,6 +164,7 @@ public class PlayerInfoHud implements CustomComponent {
     }
 
     public void update(byte[] o) {
+        Log.info("Update: " + new String(o));
         SelfInfoUpdatePacket packet;
         try {
             packet = HacknslashApplication.JSON_MAPPER.readValue(o, SelfInfoUpdatePacket.class);

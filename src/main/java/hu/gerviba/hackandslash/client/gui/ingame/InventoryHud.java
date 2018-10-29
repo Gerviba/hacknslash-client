@@ -1,12 +1,21 @@
 package hu.gerviba.hackandslash.client.gui.ingame;
 
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Supplier;
 
+import hu.gerviba.hackandslash.client.HacknslashApplication;
 import hu.gerviba.hackandslash.client.gui.CustomComponent;
+import hu.gerviba.hackandslash.client.gui.ingame.item.ItemCategory;
 import hu.gerviba.hackandslash.client.gui.ingame.item.ItemInstance;
 import hu.gerviba.hackandslash.client.gui.ingame.item.ItemType;
 import hu.gerviba.hackandslash.client.gui.ingame.item.Items;
+import hu.gerviba.hackandslash.client.packets.ItemChangePacket;
+import hu.gerviba.hackandslash.client.packets.TemplatePacketBuilder;
+import hu.gerviba.hackandslash.client.packets.ItemChangePacket.ChangeMethod;
 import javafx.geometry.Pos;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.ScrollPane;
@@ -17,12 +26,19 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.text.Text;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RequiredArgsConstructor
 public class InventoryHud implements CustomComponent {
     
     @RequiredArgsConstructor
+    @ToString
     class ItemComponent implements CustomComponent {
+        
+        @Getter
+        private final int id;
         
         @Getter
         private int count;
@@ -31,16 +47,17 @@ public class InventoryHud implements CustomComponent {
         private final String note;
         
         @Getter
-        private final List<String> allowedTypes;
+        private final List<ItemCategory> allowedTypes;
         
         private Text noteText;
         private Text countText;
         private Canvas canvas;
         private ItemInstance item = null;
         
-        public ItemComponent() {
+        public ItemComponent(int id) {
+            this.id = id;
             this.note = "";
-            this.allowedTypes = Items.ALL_TYPES;
+            this.allowedTypes = Arrays.asList(ItemCategory.values());
         }
         
         public void setItem(ItemInstance item) {
@@ -69,6 +86,11 @@ public class InventoryHud implements CustomComponent {
             if (!(other.item == null || this.allowedTypes.contains(other.item.getType().getType())) ||
                     !(this.item == null || other.allowedTypes.contains(this.item.getType().getType())))
                 return;
+            
+            HacknslashApplication.getInstance().getConnection().appendTask(stomp -> {
+                stomp.send("/app/switch-item", TemplatePacketBuilder
+                        .buildChangeItem(this.getId(), other.getId()));
+            });
             
             ItemInstance temp = this.item;
             this.item = other.item;
@@ -147,14 +169,16 @@ public class InventoryHud implements CustomComponent {
     static final int ITEM_SIZE = 64;
     final IngameWindow ingame;
     
+    ItemComponent weapon;
+    ItemComponent ring;
     ItemComponent helmet;
     ItemComponent armor;
     ItemComponent boots;
-    ItemComponent weapon;
-    ItemComponent ring;
     
     ItemComponent[] skills;
     ItemComponent[] items;
+    
+    private Map<Integer, Supplier<ItemComponent>> ITEM_COMPONENT_MAPPER = new HashMap<>();
     
     ItemComponent toDrag;
     AnchorPane inventoryWrapper;
@@ -189,9 +213,36 @@ public class InventoryHud implements CustomComponent {
         ScrollPane itemsWrapper = initItems();
         inventory.add(itemsWrapper, 1, 0, 1, 2);
         
+        initMapper();
+        
         close();
         
         return inventoryWrapper;
+    }
+
+    private void initMapper() {
+        ITEM_COMPONENT_MAPPER.put(0, () -> weapon);
+        ITEM_COMPONENT_MAPPER.put(1, () -> ring);
+        ITEM_COMPONENT_MAPPER.put(2, () -> helmet);
+        ITEM_COMPONENT_MAPPER.put(3, () -> armor);
+        ITEM_COMPONENT_MAPPER.put(4, () -> boots);
+
+        for (int i = 0; i < MAX_SKILLS; ++i) {
+            final int iInstance = i;
+            ITEM_COMPONENT_MAPPER.put(i + 10, () -> skills[iInstance]);
+        }
+
+        for (int i = 0; i < 40; ++i) {
+            final int iInstance = i;
+            ITEM_COMPONENT_MAPPER.put(i + 22, () -> items[iInstance]);
+        }
+        
+        ITEM_COMPONENT_MAPPER.put(-1, () -> {
+            for (ItemComponent ic : items)
+                if (ic.item == null)
+                    return ic;
+            return null;
+        });
     }
 
     private GridPane initWear() {
@@ -201,11 +252,11 @@ public class InventoryHud implements CustomComponent {
         wearWrapper.setHgap(8);
         wearWrapper.setVgap(8);
         
-        wearWrapper.add((helmet = new ItemComponent("HELMET", Arrays.asList("helmet"))).toPane(), 1, 0);
-        wearWrapper.add((armor = new ItemComponent("WEAPON", Arrays.asList("weapon"))).toPane(), 0, 1);
-        wearWrapper.add((boots = new ItemComponent("ARMOR", Arrays.asList("armor"))).toPane(), 1, 1);
-        wearWrapper.add((weapon = new ItemComponent("RING", Arrays.asList("ring"))).toPane(), 2, 1);
-        wearWrapper.add((ring = new ItemComponent("BOOTS", Arrays.asList("boots"))).toPane(), 1, 2);
+        wearWrapper.add((weapon = new ItemComponent(0, "WEAPON", Arrays.asList(ItemCategory.WEAPON))).toPane(), 0, 1);
+        wearWrapper.add((ring = new ItemComponent(1, "RING", Arrays.asList(ItemCategory.RING))).toPane(), 2, 1);
+        wearWrapper.add((helmet = new ItemComponent(2, "HELMET", Arrays.asList(ItemCategory.HELMET))).toPane(), 1, 0);
+        wearWrapper.add((armor = new ItemComponent(3, "ARMOR", Arrays.asList(ItemCategory.ARMOR))).toPane(), 1, 1);
+        wearWrapper.add((boots = new ItemComponent(4, "BOOTS", Arrays.asList(ItemCategory.BOOTS))).toPane(), 1, 2);
         return wearWrapper;
     }
     
@@ -218,8 +269,9 @@ public class InventoryHud implements CustomComponent {
         
         skills = new ItemComponent[MAX_SKILLS];
         for (int i = 0; i < MAX_SKILLS; ++i)
-            skillsWrapper.add((skills[i] = new ItemComponent("F" + (i + 1), 
-                    Arrays.asList("skill", "potion", "weapon"))).toPane(), i % 3, i / 3);
+            skillsWrapper.add((skills[i] = new ItemComponent(i + 10, "F" + (i + 1), 
+                    Arrays.asList(ItemCategory.SKILL, ItemCategory.POTION, ItemCategory.WEAPON))).toPane(), 
+                    i % 3, i / 3);
         
         return skillsWrapper;
     }
@@ -239,13 +291,18 @@ public class InventoryHud implements CustomComponent {
         
         items = new ItemComponent[MAX_ITEMS];
         for (int i = 0; i < MAX_ITEMS; ++i)
-            itemsStorage.add((items[i] = new ItemComponent()).toPane(), i % 4, i / 4);
+            itemsStorage.add((items[i] = new ItemComponent(i + 22)).toPane(), i % 4, i / 4);
         
-        int i = 0;
-        for (ItemType it : Items.ALL)
-            items[i++].setItem(new ItemInstance(it, 1));
+//        addAllItems();
         
         return itemsWrapper;
+    }
+
+    @Deprecated
+    private void addAllItems() {
+        int i = 0;
+        for (ItemType it : Items.ALL.values())
+            items[i++].setItem(new ItemInstance(it, 1));
     }
     
     public void show() {
@@ -280,6 +337,36 @@ public class InventoryHud implements CustomComponent {
         highestLayer.setDisable(true);
         
         this.highestLayer.getChildren().add(descriptionBox);
+    }
+    
+    public void update(byte[] o) {
+        ItemChangePacket packet;
+        try {
+            packet = HacknslashApplication.JSON_MAPPER.readValue(o, ItemChangePacket.class);
+            if (packet.getMethod() == ChangeMethod.OVERRIDE) {
+                helmet.setItem(null);
+                armor.setItem(null);
+                boots.setItem(null);
+                weapon.setItem(null);
+                ring.setItem(null);
+                
+                for (ItemComponent ic : skills)
+                    ic.setItem(null);
+                for (ItemComponent ic : items)
+                    ic.setItem(null);
+            }
+            
+            packet.getChanges().forEach(change -> {
+                Supplier<ItemComponent> sup = ITEM_COMPONENT_MAPPER.get(change.getSlot());
+                if (sup == null) {
+                    log.error("The inventory is already full");
+                    return;
+                }
+                sup.get().setItem(new ItemInstance(Items.getItem(change.getItemId()), change.getCount()));
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
     
 }

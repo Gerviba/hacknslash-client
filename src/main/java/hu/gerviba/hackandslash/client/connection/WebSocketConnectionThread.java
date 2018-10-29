@@ -54,17 +54,24 @@ public class WebSocketConnectionThread extends Thread {
             log.info("Received session");
             after.run();
             
-            Platform.runLater(() -> (ingame = new IngameWindow()).setThisToCurrentWindow());
+            Platform.runLater(() -> {
+                (ingame = new IngameWindow()).setThisToCurrentWindow();
+                
+                appendTask(s -> {
+                    log.info("Subscribing");
+                    subscribeTo(s, "/topic/chat", ingame.getChatComponent()::appendMessage);
+                    subscribeTo(s, "/user/topic/chat", ingame.getChatComponent()::appendMessage);
+                    subscribeTo(s, "/user/topic/telemetry", ingame::updateTelemetry);
+                    subscribeTo(s, "/user/topic/map", ingame::loadMap);
+                    subscribeTo(s, "/user/topic/self", ingame.getPlayerInfoComponent()::update);
+                    subscribeTo(s, "/topic/skills", ingame.getSkillsComponent()::applySkill);
+                    subscribeTo(s, "/user/topic/inventory", ingame.getInventoryComponent()::update);
+                    
+                    sendJustConnected();
 
-            log.info("Subscribing");
-            subscribeChat(stomp);
-            subscribePrivateChat(stomp);
-            subscribeTelemetry(stomp);
-            subscribeMap(stomp);
-            subscribeSelfInfo(stomp);
-            subscribeSkills(stomp);
-
-            sendJustConnected();
+                    requestForSelfInfo();
+                });
+            });
             
             log.info("Event bus started");
             doPolling(stomp);
@@ -82,8 +89,9 @@ public class WebSocketConnectionThread extends Thread {
         });
     }
 
-    private void subscribeMap(StompSession stomp) {
-        stomp.subscribe("/user/topic/map", new StompFrameHandler() {
+    private void subscribeTo(StompSession stomp, String channel, Consumer<byte[]> action) {
+        log.info("Subscribe to: " + channel);
+        stomp.subscribe(channel, new StompFrameHandler() {
 
             @Override
             public Type getPayloadType(StompHeaders stompHeaders) {
@@ -92,87 +100,7 @@ public class WebSocketConnectionThread extends Thread {
 
             @Override
             public void handleFrame(StompHeaders stompHeaders, Object o) {
-                Platform.runLater(() -> ingame.loadMap((byte[]) o));
-            }
-            
-        });
-    }
-    
-    private void subscribeTelemetry(StompSession stomp) {
-        stomp.subscribe("/user/topic/telemetry", new StompFrameHandler() {
-
-            @Override
-            public Type getPayloadType(StompHeaders stompHeaders) {
-                return byte[].class;
-            }
-
-            @Override
-            public void handleFrame(StompHeaders stompHeaders, Object o) {
-                Platform.runLater(() -> ingame.updateTelemetry((byte[]) o));
-            }
-            
-        });
-    }
-    
-    private void subscribeSelfInfo(StompSession stomp) {
-        stomp.subscribe("/user/topic/self", new StompFrameHandler() {
-
-            @Override
-            public Type getPayloadType(StompHeaders stompHeaders) {
-                return byte[].class;
-            }
-
-            @Override
-            public void handleFrame(StompHeaders stompHeaders, Object o) {
-                Platform.runLater(() -> ingame.getPlayerInfoComponent().update((byte[]) o));
-            }
-            
-        });
-    }
-
-    private void subscribeChat(StompSession stomp) {
-        stomp.subscribe("/topic/chat", new StompFrameHandler() {
-
-            @Override
-            public Type getPayloadType(StompHeaders stompHeaders) {
-                return byte[].class;
-            }
-
-            @Override
-            public void handleFrame(StompHeaders stompHeaders, Object o) {
-                Platform.runLater(() -> ingame.getChatComponent().appendMessage((byte[]) o));
-            }
-            
-        });
-    }
-    
-    private void subscribePrivateChat(StompSession stomp) {
-        stomp.subscribe("/user/topic/chat", new StompFrameHandler() {
-
-            @Override
-            public Type getPayloadType(StompHeaders stompHeaders) {
-                return byte[].class;
-            }
-
-            @Override
-            public void handleFrame(StompHeaders stompHeaders, Object o) {
-                Platform.runLater(() -> ingame.getChatComponent().appendMessage((byte[]) o));
-            }
-            
-        });
-    }
-    
-    private void subscribeSkills(StompSession stomp) {
-        stomp.subscribe("/topic/skills", new StompFrameHandler() {
-
-            @Override
-            public Type getPayloadType(StompHeaders stompHeaders) {
-                return byte[].class;
-            }
-
-            @Override
-            public void handleFrame(StompHeaders stompHeaders, Object o) {
-                Platform.runLater(() -> ingame.getSkillsComponent().applySkill((byte[]) o));
+                Platform.runLater(() -> action.accept((byte[]) o));
             }
             
         });
@@ -205,5 +133,9 @@ public class WebSocketConnectionThread extends Thread {
 
     public void startTelemetry() {
         scheduleNext();
+    }
+    
+    public void requestForSelfInfo() {
+        eventBus.add(stomp -> stomp.send("/app/self", "{}".getBytes()));
     }
 }

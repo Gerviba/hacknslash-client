@@ -392,7 +392,8 @@ public class IngameWindow extends CustomWindow {
                         playerModel.get(pms.getEntityId()).update(pms);
                     } else {
                         PlayerModel player = new PlayerModel(pms.getEntityId(), pms.getName(), scale, 
-                                Items.getImageByComponents("player_no1", "null", "null", "null", "null"), 
+                                Items.getImageByComponents(pms.getBase(), pms.getWeapon(), 
+                                        pms.getHelmet(), pms.getArmor(), pms.getBoots()), 
                                 width, height);
                         player.update(pms);
                         player.setX(pms.getX());

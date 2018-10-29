@@ -188,11 +188,11 @@
 }
 
 .chat #color-blue {
-	-fx-fill: #3498DB;
+	-fx-fill: #50A5EB;
 }
 
 .chat #color-purple {
-	-fx-fill: #9B59B6;
+	-fx-fill: #FF02B7;
 }
 
 .chat #color-gray {
@@ -200,11 +200,11 @@
 }
 
 .chat #color-green {
-	-fx-fill: #2ECC71;
+	-fx-fill: #75D72C;
 }
 
 .chat #color-cyan {
-	-fx-fill: #1ABC9C;
+	-fx-fill: #50EBEB;
 }
 
 .chat #color-silver {
