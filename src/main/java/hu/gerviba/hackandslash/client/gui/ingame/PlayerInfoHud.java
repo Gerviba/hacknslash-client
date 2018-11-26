@@ -154,7 +154,7 @@ public class PlayerInfoHud implements CustomComponent {
                 });
         
         GraphicsContext playersGc = players.getGraphicsContext2D();
-        playersGc.setFill(new Color(0, 0, 0, 1));
+        playersGc.setFill(new Color(188.0/255, 58.0/255, 24.0/255, 1));
         playersGc.fillOval(64, 64, 4, 4);
     }
     

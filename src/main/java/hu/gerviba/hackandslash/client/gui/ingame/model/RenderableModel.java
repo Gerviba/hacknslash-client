@@ -4,6 +4,10 @@ import javafx.scene.canvas.GraphicsContext;
 
 public interface RenderableModel {
 
+    public default long getId() {
+        return -1;
+    }
+    
     public double getOrder();
 
     public void calc();

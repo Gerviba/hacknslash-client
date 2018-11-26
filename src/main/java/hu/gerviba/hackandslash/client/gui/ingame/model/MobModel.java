@@ -9,7 +9,7 @@ import lombok.Data;
 import lombok.Setter;
 
 @Data
-public class PlayerModel implements RenderableModel {
+public class MobModel implements RenderableModel {
 
     public static final int[][] TEXTURE_STAND = new int[][] {
         new int[] {0, 0}, 
@@ -59,12 +59,6 @@ public class PlayerModel implements RenderableModel {
     private volatile boolean walking;
     private volatile float hp;
 
-    private volatile String base = "null";
-    private volatile String weapon = "null";
-    private volatile String helmet = "null";
-    private volatile String armor = "null";
-    private volatile String boots = "null";
-    
     private double targetX;
     private double targetY;
     private int canvasWidth;
@@ -73,13 +67,13 @@ public class PlayerModel implements RenderableModel {
     @Setter
     private Image texture;
     
-    public PlayerModel(long entityId, String name, int scale, Image texture, int width, int height) {
+    public MobModel(long entityId, String name, int scale, String texture, int width, int height) {
         this.entityId = entityId;
         this.scale = scale * 32;
         this.canvasWidth = width;
         this.canvasHeight = height;
         this.name = name;
-        this.texture = texture;
+        this.texture = Items.getImageByComponents(texture, "null", "null", "null", "null");
     }
     
     @Override
@@ -130,30 +124,27 @@ public class PlayerModel implements RenderableModel {
                 scale * 0.75 * hp, 4);
     }
     
-    public void update(TelemetryPacket.PlayerModelStatus pms) {
-        this.targetX = (long) pms.getX();
+    public void update(TelemetryPacket.MobStatus ms) {
+        this.targetX = (long) ms.getTargetX();
         if (Math.abs(this.targetX - this.x) > 10)
             this.x = this.targetX;
-        this.targetY = (long) pms.getY();
+        this.targetY = (long) ms.getTargetY();
         if (Math.abs(this.targetY - this.y) > 10)
             this.y = this.targetY;
-        this.direction = pms.getDirection();
-        this.walking = pms.isWalking();
-        this.hp = pms.getHp();
-
-        if (!this.weapon.equals(pms.getWeapon())
-                || !this.helmet.equals(pms.getHelmet())
-                || !this.armor.equals(pms.getArmor())
-                || !this.boots.equals(pms.getBoots())
-                || !this.base.equals(pms.getBase())) {
-            
-            this.weapon = pms.getWeapon();
-            this.helmet = pms.getHelmet();
-            this.armor = pms.getArmor();
-            this.boots = pms.getBoots();
-            this.base = pms.getBase();
-            this.texture = Items.getImageByComponents(base, weapon, helmet, armor, boots);
+        
+        this.walking = Math.abs(this.targetX - this.x) > 0.1 || Math.abs(this.targetY - this.y) > 0.1;
+        if (this.walking) {
+            if (Math.abs(this.targetX - this.x) > Math.abs(this.targetY - this.y)) {
+                this.direction = Math.signum(this.targetX - this.x) == 1 
+                        ? DIRECTION_RIGHT
+                        : DIRECTION_LEFT;
+            } else {
+                this.direction = Math.signum(this.targetY - this.y) == 1 
+                        ? DIRECTION_BACK
+                        : DIRECTION_STAND;
+            }
         }
+        this.hp = ms.getHp();
     }
 
     @Override

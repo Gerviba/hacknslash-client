@@ -48,7 +48,6 @@ public class WebSocketConnectionThread extends Thread {
             WebsocketHandler websocket = new WebsocketHandler();
 
             ListenableFuture<StompSession> f = websocket.connect(ip, sessionId);
-            // Exception handler egy Consumer-el
             StompSession stomp = f.get();
 
             log.info("Received session");
@@ -110,7 +109,7 @@ public class WebSocketConnectionThread extends Thread {
         Consumer<StompSession> event;
         List<Consumer<StompSession>> burst = new LinkedList<>();
         while (true) {
-            while ((event = eventBus.poll()) != null)
+            while ((event = eventBus.poll()) != null) // TODO: TAKE
                 burst.add(event);
             
             for (Consumer<StompSession> b : burst)

@@ -5,7 +5,7 @@ import javafx.scene.image.Image;
 import lombok.Data;
 
 @Data
-public class MiddleModel implements RenderableModel {
+public class StaticObjectModel implements RenderableModel {
 
     private final double dX;
     private final double dY;
@@ -13,8 +13,6 @@ public class MiddleModel implements RenderableModel {
     private final int renderHeight;
     private final int scale;
     private final Image image;
-    private final int textureX;
-    private final int textureY;
     private final int canvasWidth;
     private final int canvasHeight;
     
@@ -25,17 +23,16 @@ public class MiddleModel implements RenderableModel {
     @Override
     public void draw(GraphicsContext midGc, GraphicsContext topGc, double time, double x, double y) {
         midGc.drawImage(image, 
-                (scale * 32) * textureX, 
-                (scale * 32) * textureY,
+                0, 0,
                 renderWidth, renderHeight, 
-                dX - x + (canvasWidth / 2), 
+                dX - x + (canvasWidth / 2) - (renderWidth / 2), 
                 dY - y + (canvasHeight / 2), 
                 renderWidth, renderHeight);
     }
 
     @Override
     public double getOrder() {
-        return dY;
+        return dY - renderHeight;
     }
 
     @Override

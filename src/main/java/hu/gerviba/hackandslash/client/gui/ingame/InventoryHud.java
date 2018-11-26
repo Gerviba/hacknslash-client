@@ -11,11 +11,10 @@ import hu.gerviba.hackandslash.client.HacknslashApplication;
 import hu.gerviba.hackandslash.client.gui.CustomComponent;
 import hu.gerviba.hackandslash.client.gui.ingame.item.ItemCategory;
 import hu.gerviba.hackandslash.client.gui.ingame.item.ItemInstance;
-import hu.gerviba.hackandslash.client.gui.ingame.item.ItemType;
 import hu.gerviba.hackandslash.client.gui.ingame.item.Items;
 import hu.gerviba.hackandslash.client.packets.ItemChangePacket;
-import hu.gerviba.hackandslash.client.packets.TemplatePacketBuilder;
 import hu.gerviba.hackandslash.client.packets.ItemChangePacket.ChangeMethod;
+import hu.gerviba.hackandslash.client.packets.TemplatePacketBuilder;
 import javafx.geometry.Pos;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.ScrollPane;
@@ -133,6 +132,7 @@ public class InventoryHud implements CustomComponent {
                 descriptionBox.setVisible(false);
             });
             pane.setOnMouseReleased(event -> {
+                //TODO: Cehck null
                 if (event.getPickResult().getIntersectedNode().getUserData() instanceof ItemComponent) {
                     ((ItemComponent) event.getPickResult().getIntersectedNode().getUserData()).switchItems(this);
                     descriptionBox.setTranslateX(event.getSceneX() + 30);
@@ -293,16 +293,7 @@ public class InventoryHud implements CustomComponent {
         for (int i = 0; i < MAX_ITEMS; ++i)
             itemsStorage.add((items[i] = new ItemComponent(i + 22)).toPane(), i % 4, i / 4);
         
-//        addAllItems();
-        
         return itemsWrapper;
-    }
-
-    @Deprecated
-    private void addAllItems() {
-        int i = 0;
-        for (ItemType it : Items.ALL.values())
-            items[i++].setItem(new ItemInstance(it, 1));
     }
     
     public void show() {

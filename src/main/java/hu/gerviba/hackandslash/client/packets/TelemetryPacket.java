@@ -6,11 +6,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 public class TelemetryPacket {
 
     @Data
-    @NoArgsConstructor
     public static class PlayerModelStatus {
         private String name;
         private long entityId;
@@ -27,10 +25,19 @@ public class TelemetryPacket {
         private String boots;
     }
     
+    @Data
+    public class MobStatus {
+        private long entityId;
+        private String name;
+        private double targetX;
+        private double targetY;
+        private int hp;
+    }
+
     private List<PlayerModelStatus> players;
     
     private List<Long> entityRemove;
     
-    // Mob list
-    
+    private List<MobStatus> mobs;
+
 }

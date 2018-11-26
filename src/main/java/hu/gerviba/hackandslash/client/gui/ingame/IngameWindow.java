@@ -23,8 +23,10 @@ import hu.gerviba.hackandslash.client.gui.ingame.model.PermanentParticleInstance
 import hu.gerviba.hackandslash.client.gui.ingame.model.PlayerModel;
 import hu.gerviba.hackandslash.client.gui.ingame.model.RenderableModel;
 import hu.gerviba.hackandslash.client.gui.ingame.model.StaticLayer;
+import hu.gerviba.hackandslash.client.gui.ingame.model.StaticObjectModel;
 import hu.gerviba.hackandslash.client.gui.ingame.particle.Particles;
 import hu.gerviba.hackandslash.client.packets.MapLoadPacket;
+import hu.gerviba.hackandslash.client.packets.MapLoadPacket.MapLayerInfo.BackgroundPart;
 import hu.gerviba.hackandslash.client.packets.TelemetryPacket;
 import hu.gerviba.hackandslash.client.packets.TelemetryPacket.PlayerModelStatus;
 import javafx.animation.AnimationTimer;
@@ -73,6 +75,7 @@ public class IngameWindow extends CustomWindow {
     private Canvas canvasForeground;
     private StaticLayer foreground = null;
     private Canvas playerNames;
+    private List<int[]> walkable;
     
     @Getter
     private int height;
@@ -89,31 +92,6 @@ public class IngameWindow extends CustomWindow {
     
     Set<String> input = new HashSet<>();
 
-    /**
-     * Ingame:
-     * - Window hint layer
-     * - Window layer
-     * - Texts layer
-     * - Texts layer
-     * - Foreground layer
-     * - Fog layer
-     * - Play Area layer
-     * - Background layer
-     * 
-     * Player HUD:
-     * - HP
-     * - Mana
-     * - Exp
-     * - HP Potion count
-     * 
-     * Inventory:
-     * - Helmet
-     * - Armor
-     * - Rings, etc
-     * - Weapon
-     * - Money
-     * - Looted items (gems, bones, random shit)
-     */
     @Override
     protected void init() {
         initVars();
@@ -194,6 +172,7 @@ public class IngameWindow extends CustomWindow {
         
         long startNanoTime = System.nanoTime();
         animationTimer = new AnimationTimer() {
+            @Override
             public void handle(long currentNanoTime) {
                 double t = (currentNanoTime - startNanoTime) / 1000000000.0;
                 
@@ -332,11 +311,31 @@ public class IngameWindow extends CustomWindow {
         if (input.contains("F7")) {
             skillsComponent.handleSkill(6);
         }
+        if (input.contains("F")) {
+            // TODO: send use packet
+        }
         
-        me.setX(dX);
-        me.setY(dY);
+        if (canMoveTo(dX, dY)) {
+            me.setX(dX);
+            me.setY(dY);
+        } else if (canMoveTo(me.getX(), dY)) {
+            me.setY(dY);
+        } else if (canMoveTo(dX, me.getY())) {
+            me.setX(dX);
+        }
+            
         me.setDirection(direction);
         me.setWalking(walking);
+    }
+
+    private boolean canMoveTo(double dX, double dY) {
+        return walkable.stream().filter(c -> 
+            c[0] == (int) ((dX + 14) / scaleInPixel) && 
+            c[1] == (int) ((dY - 6) / scaleInPixel)
+        ).findAny().isPresent() && walkable.stream().filter(c -> 
+            c[0] == (int) ((dX - 14) / scaleInPixel) && 
+            c[1] == (int) ((dY - 6) / scaleInPixel)
+        ).findAny().isPresent();
     }
 
     private void initScene(Pane body) {
@@ -358,6 +357,7 @@ public class IngameWindow extends CustomWindow {
             
             background = new StaticLayer(canvasBackground.getGraphicsContext2D(), 
                     packet.getBackground(), texture, 64, width, height, 0, 0);
+            walkable = flatMapOf(packet.getBackground().getParts());
             scene.getRoot().setStyle("-fx-background-color: #" + packet.getBackgroundColor());
             getMe().setX(packet.getSpawnX() * scaleInPixel);
             getMe().setY(packet.getSpawnY() * scaleInPixel);
@@ -365,22 +365,38 @@ public class IngameWindow extends CustomWindow {
                     packet.getForeground(), texture, 64, width, height, 0, 0);
             playerInfoComponent.renderMapCanvas(packet.getBackground());
             entities.addAll(packet.getMiddle().getParts().stream().flatMap(
-                    part -> part.getPlaces().stream().map(place -> {
-                        return new MiddleModel(
+                    part -> part.getPlaces().stream().map(place -> 
+                        new MiddleModel(
                                 scaleInPixel * place[0],
                                 scaleInPixel * place[1],
                                 scaleInPixel, scaleInPixel,
                                 scale, texture,
                                 part.getX(), part.getY(), 
-                                width, height);
-                    })).collect(Collectors.toList()));
+                                width, height)
+                    )).collect(Collectors.toList()));
             
+            entities.addAll(packet.getObjects().stream()
+                    .map(obj -> new StaticObjectModel(
+                            scaleInPixel * (obj.getX() + 0.5),
+                            scaleInPixel * (obj.getY() + 0.75),
+                            scaleInPixel / 2, scaleInPixel / 2,
+                            scale, ImageUtil.loadImage("/assets/objects/" + obj.getTexture() + ".png", 2),
+                            width, height
+                            ))
+                    .collect(Collectors.toList()));
             log.info("Map loaded");
         } catch (Exception e) {
             log.error("Failed to load map", e);
         }
     }
     
+    private List<int[]> flatMapOf(List<BackgroundPart> parts) {
+        LinkedList<int[]> result = new LinkedList<>();
+        for (BackgroundPart bg : parts)
+            result.addAll(bg.getPlaces());
+        return result;
+    }
+
     public void updateTelemetry(byte[] o) {
         TelemetryPacket telemetry;
         try {
@@ -401,6 +417,10 @@ public class IngameWindow extends CustomWindow {
                         playerModel.put(pms.getEntityId(), player);
                         entities.add(player);
                     }
+                }
+                for (long eid : telemetry.getEntityRemove()) {
+                    playerModel.remove(eid);
+                    entities.removeIf(entity -> entity.getId() == eid);
                 }
             }
         } catch (IOException e) {
