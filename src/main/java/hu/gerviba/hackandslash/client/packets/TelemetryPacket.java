@@ -4,9 +4,17 @@ import java.util.List;
 
 import lombok.Data;
 
+/**
+ * Players and mobs positions (telemetry packet)
+ * @author Gergely Szabó
+ */
 @Data
 public class TelemetryPacket {
 
+    /**
+     * Player status
+     * @author Gergely Szabó
+     */
     @Data
     public static class PlayerModelStatus {
         private String name;
@@ -24,6 +32,10 @@ public class TelemetryPacket {
         private String boots;
     }
     
+    /**
+     * Mob status
+     * @author Gergely Szabó
+     */
     @Data
     public static class MobStatus {
         private long entityId;

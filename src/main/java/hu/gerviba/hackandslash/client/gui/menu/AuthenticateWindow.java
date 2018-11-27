@@ -6,10 +6,17 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 
+/**
+ * The authentication window
+ * @author Gergely Szabó
+ */
 public class AuthenticateWindow extends CustomWindow {
 
     LoginComponent login;
     
+    /**
+     * Initialize the GUI
+     */
     @Override
     protected void init() {
         BorderPane body = new BorderPane();
@@ -22,10 +29,18 @@ public class AuthenticateWindow extends CustomWindow {
         initScene(body);
     }
 
+    /**
+     * Creates error header component
+     * @return
+     */
     private Pane getHeaderComponent() {
         return new GridPane();
     }
 
+    /**
+     * Initialize the JavaFX {@link Scene}
+     * @param body Body component
+     */
     private void initScene(BorderPane body) {
         scene = new Scene(body);
         scene.getStylesheets().add(getClass().getResource("/assets/css/style.css").toExternalForm());

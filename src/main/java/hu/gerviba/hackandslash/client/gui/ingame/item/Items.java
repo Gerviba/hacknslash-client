@@ -9,6 +9,10 @@ import java.util.stream.Stream;
 import hu.gerviba.hackandslash.client.ImageUtil;
 import javafx.scene.image.Image;
 
+/**
+ * Item storage and utility functions
+ * @author Gergely Szabó
+ */
 public class Items {
 
     public static final Image TEXTURE = ImageUtil.loadImage("/assets/items/items.png", 2);
@@ -137,6 +141,9 @@ public class Items {
     
     public static final Map<Integer, ItemType> ALL;
     
+    /**
+     * Static initialization
+     */
     static {
         ALL = Stream.of(Items.class.getFields())
                 .filter(field -> field.getType() == ItemType.class)
@@ -152,14 +159,29 @@ public class Items {
         
     }
     
+    /**
+     * Item getter by id
+     * @param itemId ID of the item
+     * @return The item with the specified ID
+     */
     public static ItemType getItem(int itemId) {
         return ALL.get(itemId);
     }
     
-    private static final Map<String, Map<String, Map<String, Map<String, Map<String, Image>>>>> PLAYER_SKIN_REPO 
-            = new HashMap<>();
+    private static final Map<String, Map<String, Map<String, Map<String, Map<String, Image>>>>> 
+            PLAYER_SKIN_REPO = new HashMap<>();
     private static int SCALE = 2;
     
+    /**
+     * Get merged (and cached) texture of the player and its clothing.
+     * @param base Player base texture
+     * @param weapon Selected weapon
+     * @param helmet Selected helmet
+     * @param armor Selected armor
+     * @param boots Selected boots
+     * @return The merged image of the player.
+     * @see ImageUtil#loadImage(String, String, String, String, String, int)
+     */
     public static Image getImageByComponents(String base, String weapon, String helmet, String armor, String boots) {
         if (!PLAYER_SKIN_REPO.containsKey(base))
             PLAYER_SKIN_REPO.put(base, new HashMap<>());

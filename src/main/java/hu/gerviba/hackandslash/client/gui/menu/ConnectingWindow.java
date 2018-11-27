@@ -15,6 +15,10 @@ import javafx.scene.layout.Pane;
 import javafx.scene.text.Text;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Connecting window
+ * @author Gergely Szabó
+ */
 @Slf4j
 public class ConnectingWindow extends CustomWindow {
 
@@ -23,6 +27,11 @@ public class ConnectingWindow extends CustomWindow {
     
     private Text connectingText;
     
+    /**
+     * Constructor
+     * @param ip IP address of the server
+     * @param sessionId Session ID of the user
+     */
     public ConnectingWindow(String ip, String sessionId) {
         super(false);
         this.ip = ip;
@@ -30,6 +39,9 @@ public class ConnectingWindow extends CustomWindow {
         init();
     }
 
+    /**
+     * Initialize window contents
+     */
     @Override
     protected void init() {
         BorderPane body = new BorderPane();
@@ -51,6 +63,9 @@ public class ConnectingWindow extends CustomWindow {
         }); 
     }
 
+    /**
+     * Add connecting label
+     */
     private Pane getConnectionComponent() {
         GridPane comp = new GridPane();
         comp.getStyleClass().add("connecting");
@@ -70,6 +85,9 @@ public class ConnectingWindow extends CustomWindow {
         return comp;
     }
 
+    /**
+     * Initialize JavaFX {@link Scene}
+     */
     private void initScene(BorderPane body) {
         scene = new Scene(body);
         scene.getStylesheets().add(getClass().getResource("/assets/css/style.css").toExternalForm());

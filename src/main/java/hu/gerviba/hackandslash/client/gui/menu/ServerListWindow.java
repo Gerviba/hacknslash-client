@@ -15,6 +15,10 @@ import javafx.scene.layout.Pane;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 
+/**
+ * Server list window
+ * @author Gergely Szabó
+ */
 public class ServerListWindow extends CustomWindow {
     
     GridPane serverList;
@@ -22,12 +26,19 @@ public class ServerListWindow extends CustomWindow {
     private final String[] promotedServers;
     private List<ServerEntryComponent> serverComponents = new ArrayList<>();
     
+    /**
+     * Constructor
+     * @param servers List of servers to show
+     */
     public ServerListWindow(String[] servers) {
         super(false);
         promotedServers = servers == null ? new String[] {} : servers;
         init();
     }
 
+    /**
+     * Initialize base component
+     */
     @Override
     protected void init() {
         BorderPane body = new BorderPane();
@@ -40,6 +51,9 @@ public class ServerListWindow extends CustomWindow {
         initScene(body);
     }
 
+    /**
+     * Add scroll pane
+     */
     private ScrollPane getServerListComponent() {
         ScrollPane serversPane = new ScrollPane();
         serversPane.setFitToWidth(true);
@@ -70,6 +84,9 @@ public class ServerListWindow extends CustomWindow {
         return serversPane;
     }
 
+    /**
+     * Initialize JavaFX {@link Scene}
+     */
     private void initScene(Pane body) {
         scene = new Scene(body);
         scene.getStylesheets().add(getClass().getResource("/assets/css/style.css").toExternalForm());
@@ -78,6 +95,9 @@ public class ServerListWindow extends CustomWindow {
         stage.setMinWidth(820);
     }
     
+    /**
+     * Add header component
+     */
     private GridPane getHeaderComponent() {
         GridPane header = new GridPane();
         header.getStyleClass().add("header");
@@ -90,6 +110,9 @@ public class ServerListWindow extends CustomWindow {
         return header;
     }
 
+    /**
+     * Add footer component
+     */
     private GridPane getFooterComponent() {
         GridPane footer = new GridPane();
         footer.getStyleClass().add("footer");

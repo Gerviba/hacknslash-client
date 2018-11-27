@@ -16,6 +16,11 @@ import hu.gerviba.hackandslash.client.packets.TemplatePacketBuilder;
 import javafx.application.Platform;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Class to manage the websocket connection
+ * @see #appendTask(Consumer)
+ * @author Gergely Szabó
+ */
 @Slf4j
 public class WebSocketConnectionThread extends Thread {
 
@@ -27,6 +32,12 @@ public class WebSocketConnectionThread extends Thread {
     
     private LinkedBlockingQueue<Consumer<StompSession>> eventBus = new LinkedBlockingQueue<>();
     
+    /**
+     * Constructor of the class
+     * @param ip Server IP to connect to
+     * @param sessionId Session ID of the user
+     * @param after Run this task after connected
+     */
     public WebSocketConnectionThread(String ip, String sessionId, Runnable after) {
         this.setName("WebsocketConnection");
         this.setDaemon(true);
@@ -38,10 +49,35 @@ public class WebSocketConnectionThread extends Thread {
         this.after = after;
     }
     
+    /**
+     * Append task to the event bus.
+     * It will be executed from the connection thread.
+     * Can be called from any thread.
+     * @param task Task to execute in the connection thread
+     */
     public synchronized void appendTask(Consumer<StompSession> task) {
         eventBus.add(task);
     }
     
+    /**
+     * Start sending telemetry updates.
+     * Can be called from any thread.
+     */
+    public void startTelemetry() {
+        scheduleNext();
+    }
+    
+    /**
+     * Sends a request packet to update user information.
+     * Can be called from any thread.
+     */
+    public void requestForSelfInfo() {
+        eventBus.add(stomp -> stomp.send("/app/self", "{}".getBytes()));
+    }
+    
+    /**
+     * The thread logic.
+     */
     @Override
     public void run() {
         try {
@@ -81,6 +117,9 @@ public class WebSocketConnectionThread extends Thread {
         }
     }
 
+    /**
+     * Sends the <pre>connected</pre> packet
+     */
     private void sendJustConnected() {
         eventBus.add(stomp -> {
             stomp.send("/app/connected", TemplatePacketBuilder
@@ -88,6 +127,12 @@ public class WebSocketConnectionThread extends Thread {
         });
     }
 
+    /**
+     * Subscribes to a specified channel with an action listener.
+     * @param stomp The STOMP session
+     * @param channel Channel to subscribe to
+     * @param action Action to perform if a message received
+     */
     private void subscribeTo(StompSession stomp, String channel, Consumer<byte[]> action) {
         log.info("Subscribe to: " + channel);
         stomp.subscribe(channel, new StompFrameHandler() {
@@ -105,6 +150,11 @@ public class WebSocketConnectionThread extends Thread {
         });
     }
     
+    /**
+     * Polling in the event loop
+     * @param stomp STOMP session
+     * @throws InterruptedException
+     */
     private void doPolling(StompSession stomp) throws InterruptedException {
         Consumer<StompSession> event;
         List<Consumer<StompSession>> burst = new LinkedList<>();
@@ -120,21 +170,21 @@ public class WebSocketConnectionThread extends Thread {
         }
     }
     
+    /**
+     * Schedules the next telemetry update
+     */
     private void scheduleNext() {
         eventBus.add(stomp -> updateTelemetry(stomp));
     }
 
+    /**
+     * Sends the telemetry update packet
+     * @param session STOMP session
+     */
     private void updateTelemetry(StompSession session) {
         session.send("/app/telemetry", TemplatePacketBuilder
                 .buildTelemetry(ingame.getMe()));
         scheduleNext();
     }
-
-    public void startTelemetry() {
-        scheduleNext();
-    }
     
-    public void requestForSelfInfo() {
-        eventBus.add(stomp -> stomp.send("/app/self", "{}".getBytes()));
-    }
 }

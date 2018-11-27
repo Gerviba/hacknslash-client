@@ -5,6 +5,10 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import lombok.Data;
 
+/**
+ * A layer of map tiles
+ * @author Gergely Szabó
+ */
 @Data
 public class StaticLayer {
 
@@ -17,6 +21,11 @@ public class StaticLayer {
     private final int dX;
     private final int dY;
     
+    /**
+     * Draw all the tiles
+     * @param x X offset
+     * @param y Y offset
+     */
     public void draw(double x, double y) {
         gc.clearRect(0, 0, width, height);
         

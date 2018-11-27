@@ -33,6 +33,10 @@ import javafx.scene.text.Text;
 import javafx.util.Duration;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Skill shortcut bar GUI component
+ * @author Gergely Szabó
+ */
 @Slf4j
 public class SkillsHud implements CustomComponent {
 
@@ -53,6 +57,9 @@ public class SkillsHud implements CustomComponent {
         this.ingame = ingame;
     }
     
+    /**
+     * Getter of the component's root pane
+     */
     @Override
     public Pane toPane() {
         skillsWrapper = new AnchorPane();
@@ -116,15 +123,25 @@ public class SkillsHud implements CustomComponent {
         return skillsWrapper;
     }
 
-    private void setItem(int slot, int x, int y, int size) {
+    /**
+     * Set item in the specified slot
+     * @param slot Slot id
+     * @param x Texture X
+     * @param y Texture Y
+     */
+    private void setItem(int slot, int x, int y) {
         itemCanvases[slot].getGraphicsContext2D().clearRect(0, 0, ITEM_SIZE, ITEM_SIZE);
         itemCanvases[slot].getGraphicsContext2D().drawImage(Items.TEXTURE, 
-                x * size, y * size, 
-                size, size, 
+                x * ITEM_SIZE, y * ITEM_SIZE, 
+                ITEM_SIZE, ITEM_SIZE, 
                 0, 0, 
-                size, size);
+                ITEM_SIZE, ITEM_SIZE);
     }
 
+    /**
+     * Activate loading animation
+     * @param slotUsed Slot to activate the animation
+     */
     public void handleSkill(int slotUsed) {
         if (itemsInMenu[slotUsed] == null)
             return;
@@ -137,6 +154,11 @@ public class SkillsHud implements CustomComponent {
         }
     }
     
+    /**
+     * Apply the reload animation
+     * @param background
+     * @param skill
+     */
     private void reloadTimer(Pane background, Skill skill) {
         Timeline timeline = new Timeline();
        
@@ -149,6 +171,10 @@ public class SkillsHud implements CustomComponent {
         timeline.play();
     }
 
+    /**
+     * Play skill animation
+     * @param o The byte[] received from the server
+     */
     public void applySkill(byte[] o) {
         try {
             SkillPacket packet = HacknslashApplication.JSON_MAPPER.readValue(o, SkillPacket.class);
@@ -158,10 +184,15 @@ public class SkillsHud implements CustomComponent {
         }
     }
 
+    /**
+     * Set item of the specified slot
+     * @param key Slot key
+     * @param item The item
+     */
     public void setItem(String key, ItemInstance item) {
         if (mapper.containsKey(key)) {
             if (item != null) {
-                setItem(mapper.get(key), item.getType().getTextureX(), item.getType().getTextureY(), ITEM_SIZE);
+                setItem(mapper.get(key), item.getType().getTextureX(), item.getType().getTextureY());
                 itemsInMenu[mapper.get(key)] = item.getType();
             } else {
                 itemCanvases[mapper.get(key)].getGraphicsContext2D().clearRect(0, 0, ITEM_SIZE, ITEM_SIZE);

@@ -15,6 +15,10 @@ import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * The Main class of the application
+ * @author Gergely Szabó
+ */
 public class HacknslashApplication extends Application {
 
     public static final ObjectMapper JSON_MAPPER = new ObjectMapper();
@@ -35,14 +39,19 @@ public class HacknslashApplication extends Application {
     @Setter
     private volatile WebSocketConnectionThread connection;
     
+    /**
+     * Constructor of the main class
+     */
     public HacknslashApplication() {
         instance = this;
     }
     
+    /**
+     * JavaFX entry point
+     */
     @Override
     public void start(Stage stage) {
         this.stage = stage;
-//        stage.initStyle(StageStyle.UTILITY);
         
         Font.loadFont(HacknslashApplication.class.getResource("/assets/fonts/RobotoMono-Regular.ttf").toExternalForm(), 16);
         Font.loadFont(HacknslashApplication.class.getResource("/assets/fonts/RobotoMono-Light.ttf").toExternalForm(), 16);
@@ -52,6 +61,10 @@ public class HacknslashApplication extends Application {
         new AuthenticateWindow().setThisToCurrentWindow();
     }
 
+    /**
+     * Stop listener method.
+     * Stops the {@link #ASYNC} scheduled executor thread pool.
+     */
     @Override
     public void stop() throws Exception {
         super.stop();
@@ -59,10 +72,19 @@ public class HacknslashApplication extends Application {
         ASYNC.awaitTermination(3, TimeUnit.SECONDS);
     }
     
+    /**
+     * The entrypoint of the application.
+     * @param args Command line arguments
+     */
     public static void main(String args[]) {
         launch(args);
     }
     
+    /**
+     * Host prefixer function
+     * @param ip An IP address or host
+     * @return Append a 'http://' prefix if no http(s):// presents.
+     */
     public static String respolveHost(String ip) {
         return (!ip.startsWith("http://") && !ip.startsWith("https://") 
                 ? "http://" : "") + ip;

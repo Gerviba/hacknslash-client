@@ -19,6 +19,10 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Login component
+ * @author Gergely Szabó
+ */
 @Slf4j
 public class LoginComponent implements CustomComponent {
 
@@ -26,6 +30,9 @@ public class LoginComponent implements CustomComponent {
     Text error;
     GridPane login;
     
+    /**
+     * Getter of the component root element
+     */
     @Override
     public Pane toPane() {
         GridPane authBox = new GridPane();
@@ -95,6 +102,12 @@ public class LoginComponent implements CustomComponent {
         return authBox;
     }
 
+    /**
+     * Perform the login action
+     * @param ip IP address or host of the server
+     * @param email Email of the user
+     * @param password Password of the user
+     */
     private void fireLoginEvent(String ip, String email, String password) {
         login.setDisable(true);
         RestTemplate restTemplate = new RestTemplate();
@@ -126,6 +139,9 @@ public class LoginComponent implements CustomComponent {
         }
     }
 
+    /**
+     * Append the red feedback box
+     */
     private void addErrorBox(GridPane authBox) {
         authBox.setMaxHeight(300);
         authBox.setMaxWidth(400);
@@ -140,6 +156,9 @@ public class LoginComponent implements CustomComponent {
         authBox.setVgap(20);
     }
 
+    /**
+     * Add the text fiends
+     */
     private void addTexts(GridPane login) {
         Text ipLabel = new Text("Server IP");
         ipLabel.setTextAlignment(TextAlignment.LEFT);

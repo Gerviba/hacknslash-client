@@ -15,17 +15,19 @@ import org.springframework.web.socket.sockjs.client.Transport;
 import org.springframework.web.socket.sockjs.client.WebSocketTransport;
 import org.springframework.web.socket.sockjs.frame.Jackson2SockJsMessageCodec;
 
-import lombok.Getter;
-
+/**
+ * Webscoket connection handler
+ * @author Gergely Szabó
+ */
 public class WebsocketHandler {
     
-    @Getter
-    private static WebsocketHandler instance;
-    
-    public WebsocketHandler() {
-        instance = this;
-    }
-    
+    /**
+     * Connect to the WebSocket server
+     * @param host Host to connect to
+     * @param sessionId Session ID of the user
+     * @return A listenable fuure
+     * @throws MalformedURLException
+     */
     public ListenableFuture<StompSession> connect(String host, String sessionId) throws MalformedURLException {
         Transport webSocketTransport = new WebSocketTransport(new StandardWebSocketClient());
         List<Transport> transports = Collections.singletonList(webSocketTransport);

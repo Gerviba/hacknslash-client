@@ -3,6 +3,10 @@ package hu.gerviba.hackandslash.client.packets;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+/**
+ * Skill applied packet
+ * @author Gergely Szabó
+ */
 @Data
 @AllArgsConstructor
 public class SkillPacket {

@@ -28,10 +28,18 @@ import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Inventory GUI component
+ * @author Gergely Szabó
+ */
 @Slf4j
 @RequiredArgsConstructor
 public class InventoryHud implements CustomComponent {
     
+    /**
+     * Item slot
+     * @author Gergely Szabó
+     */
     @RequiredArgsConstructor
     @ToString
     class ItemComponent implements CustomComponent {
@@ -53,12 +61,20 @@ public class InventoryHud implements CustomComponent {
         private Canvas canvas;
         private ItemInstance item = null;
         
+        /**
+         * Constructor
+         * @param id Slot id
+         */
         public ItemComponent(int id) {
             this.id = id;
             this.note = "";
             this.allowedTypes = Arrays.asList(ItemCategory.values());
         }
         
+        /**
+         * Change the contained item
+         * @param item
+         */
         public void setItem(ItemInstance item) {
             this.item = item;
             canvas.getGraphicsContext2D().clearRect(0, 0, ITEM_SIZE, ITEM_SIZE);
@@ -81,6 +97,10 @@ public class InventoryHud implements CustomComponent {
                 countText.setText(item.getCount() + "");
         }
         
+        /**
+         * Switch items between two slots
+         * @param other The other slot
+         */
         public void switchItems(ItemComponent other) {
             if (!(other.item == null || this.allowedTypes.contains(other.item.getType().getType())) ||
                     !(this.item == null || other.allowedTypes.contains(this.item.getType().getType())))
@@ -97,6 +117,9 @@ public class InventoryHud implements CustomComponent {
             this.setItem(this.item);
         }
         
+        /**
+         * Get root node of the component
+         */
         @Override
         public Pane toPane() {
             StackPane pane = new StackPane();
@@ -125,14 +148,16 @@ public class InventoryHud implements CustomComponent {
             
             return pane;
         }
-        
+
+        /**
+         * Add item drag and drop events
+         */
         private void addMoveEvents(StackPane pane) {
             pane.setOnMouseDragged(event -> {
                 toDrag = ItemComponent.this;
                 descriptionBox.setVisible(false);
             });
             pane.setOnMouseReleased(event -> {
-                //TODO: Cehck null
                 if (event.getPickResult().getIntersectedNode().getUserData() instanceof ItemComponent) {
                     ((ItemComponent) event.getPickResult().getIntersectedNode().getUserData()).switchItems(this);
                     descriptionBox.setTranslateX(event.getSceneX() + 30);
@@ -141,6 +166,9 @@ public class InventoryHud implements CustomComponent {
             });
         }
 
+        /**
+         * Add description box events
+         */
         private void addDescBoxEvents(StackPane pane) {
             pane.setOnMouseEntered(event -> {
                 if (item == null)
@@ -188,6 +216,9 @@ public class InventoryHud implements CustomComponent {
     Text descriptionTitle;
     Text descriptionLore;
     
+    /**
+     * Getter of the root element of the component
+     */
     @Override
     public Pane toPane() {
         inventoryWrapper = new AnchorPane();
@@ -220,6 +251,9 @@ public class InventoryHud implements CustomComponent {
         return inventoryWrapper;
     }
 
+    /**
+     * Initialize the mapper
+     */
     private void initMapper() {
         ITEM_COMPONENT_MAPPER.put(0, () -> weapon);
         ITEM_COMPONENT_MAPPER.put(1, () -> ring);
@@ -245,6 +279,9 @@ public class InventoryHud implements CustomComponent {
         });
     }
 
+    /**
+     * Initialize the wearable part
+     */
     private GridPane initWear() {
         GridPane wearWrapper = new GridPane();
         wearWrapper.getStyleClass().add("wear");
@@ -260,6 +297,11 @@ public class InventoryHud implements CustomComponent {
         return wearWrapper;
     }
     
+    
+    /**
+     * Initialize the skills part
+     * @return
+     */
     private GridPane initSkills() {
         GridPane skillsWrapper = new GridPane();
         skillsWrapper.getStyleClass().add("skill");
@@ -276,6 +318,9 @@ public class InventoryHud implements CustomComponent {
         return skillsWrapper;
     }
     
+    /**
+     * Initialize the items part
+     */
     private ScrollPane initItems() {
         ScrollPane itemsWrapper = new ScrollPane();
         GridPane itemsStorage = new GridPane();
@@ -296,11 +341,17 @@ public class InventoryHud implements CustomComponent {
         return itemsWrapper;
     }
     
+    /**
+     * Show GUI
+     */
     public void show() {
         inventoryWrapper.setDisable(false);
         inventoryWrapper.setVisible(true);
     }
     
+    /**
+     * Close GUI
+     */
     public void close() {
         inventoryWrapper.setDisable(true);
         inventoryWrapper.setVisible(false);
@@ -308,6 +359,10 @@ public class InventoryHud implements CustomComponent {
             descriptionBox.setVisible(false);
     }
     
+    /**
+     * Description box setup
+     * @param highest
+     */
     public void setHighestLayer(StackPane highest) {
         this.highestLayer = highest;
         
@@ -330,6 +385,10 @@ public class InventoryHud implements CustomComponent {
         this.highestLayer.getChildren().add(descriptionBox);
     }
     
+    /**
+     * Update items
+     * @param o The byte[] received from the server
+     */
     public void update(byte[] o) {
         ItemChangePacket packet;
         try {

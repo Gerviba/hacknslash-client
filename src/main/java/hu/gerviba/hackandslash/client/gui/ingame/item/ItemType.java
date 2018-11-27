@@ -2,6 +2,10 @@ package hu.gerviba.hackandslash.client.gui.ingame.item;
 
 import lombok.Data;
 
+/**
+ * Pojo to store item type specific data
+ * @author Gergely Szabó
+ */
 @Data
 public class ItemType {
 

@@ -1,22 +1,17 @@
 package hu.gerviba.hackandslash.client.auth.pojo;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 
-@NoArgsConstructor
+/**
+ * Pojo to store registration response data
+ * @author Gergely Szabó
+ */
+@Data
 @AllArgsConstructor
-@ToString
 public class RegistrationResponse {
 
-    @Getter
-    @Setter
     private SimpleStatusResponse status;
-    
-    @Getter
-    @Setter
     private UserRepresentation user;
 
 }

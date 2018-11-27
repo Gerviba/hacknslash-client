@@ -5,10 +5,18 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+/**
+ * Chat message packet pojo
+ * @author Gergely Szabó
+ */
 @Data
 @NoArgsConstructor
 public class ChatMessagePacket {
 
+    /**
+     * Type (and color) of the message
+     * @author Gergely Szabó
+     */
     @AllArgsConstructor
     public static enum MessageType {
         CHAT("white"),

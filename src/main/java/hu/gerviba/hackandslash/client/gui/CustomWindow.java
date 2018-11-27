@@ -5,6 +5,10 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import lombok.Getter;
 
+/**
+ * Abstract window class
+ * @author Gergely Szabó
+ */
 public abstract class CustomWindow {
 
     @Getter
@@ -15,30 +19,43 @@ public abstract class CustomWindow {
     
     protected Stage stage;
     
+    /**
+     * This constructor will automatically executes the {@link #init()} method.
+     */
     public CustomWindow() {
         stage = HacknslashApplication.getInstance().getStage();
         init();
     }
     
+    /**
+     * Constructor
+     * @param autoInit Executes the {@link #init()} method at the end of the constructor
+     */
     public CustomWindow(boolean autoInit) {
         stage = HacknslashApplication.getInstance().getStage();
         if (autoInit)
             init();
     }
 
+    /**
+     * Changes the current scene in the active stage
+     */
     public final void setThisToCurrentWindow() {
         if (currentWindow != null)
             currentWindow.onClose();
         currentWindow = this;
-//        System.err.println("Replacing " + Thread.currentThread().getStackTrace()[2]);
         stage.setScene(scene);
         stage.show();
     }
 
+    /**
+     * Initialize the window. Must be overridden,
+     */
     protected abstract void init();
     
-    public void onClose() {
-        
-    }
+    /**
+     * Close listener. Can be overridden.
+     */
+    public void onClose() {}
     
 }

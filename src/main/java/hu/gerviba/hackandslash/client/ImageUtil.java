@@ -12,9 +12,19 @@ import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Image utility class
+ * @author Gergely Szabó
+ */
 @Slf4j
 public final class ImageUtil {
 
+    /**
+     * Multiplies the size of the specified image.
+     * @param before A BufferedImage
+     * @param scale Scale to multiply by
+     * @return Rescaled image buffer
+     */
     public static BufferedImage scale(BufferedImage before, int scale) {
         int w = before.getWidth();
         int h = before.getHeight();
@@ -25,6 +35,12 @@ public final class ImageUtil {
         return scaleOp.filter(before, after);
     }
     
+    /**
+     * Load image (and resize) form file system
+     * @param textureName Resource name
+     * @param scale Scale to multiply by
+     * @return Loaded and resized image
+     */
     public static Image loadImage(String textureName, int scale) {
         try {
             BufferedImage image = ImageIO.read(ImageUtil.class.getResource(textureName));
@@ -36,10 +52,25 @@ public final class ImageUtil {
         return null;
     }
     
+    /**
+     * Load an image without resize
+     * @param textureName Resource name
+     * @return Loaded image
+     */
     public static Image loadImage(String textureName) {
         return new Image(textureName);
     }
 
+    /**
+     * Image loader for player model
+     * @param base Name of the base image
+     * @param weapon Name of the weapon image
+     * @param helmet Name of the helmet image
+     * @param armor Name of the armor image
+     * @param boots Name of the boots image
+     * @param scale Scale to resize
+     * @return Loaded and merged image
+     */
     public static Image loadImage(String base, String weapon, String helmet, String armor, String boots, int scale) {
         try {
             BufferedImage baseImg = ImageIO.read(ImageUtil.class.getResource(

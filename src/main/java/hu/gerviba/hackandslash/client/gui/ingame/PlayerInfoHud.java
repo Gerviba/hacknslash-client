@@ -2,8 +2,6 @@ package hu.gerviba.hackandslash.client.gui.ingame;
 
 import java.io.IOException;
 
-import com.oracle.tools.packager.Log;
-
 import hu.gerviba.hackandslash.client.HacknslashApplication;
 import hu.gerviba.hackandslash.client.gui.CustomComponent;
 import hu.gerviba.hackandslash.client.packets.MapLoadPacket.MapLayerInfo;
@@ -22,6 +20,10 @@ import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
 import lombok.Getter;
 
+/**
+ * Player info and minimap GUI component
+ * @author Gergely Szabó
+ */
 public class PlayerInfoHud implements CustomComponent {
 
     private static final int MINIMAP_SIZE = 128;
@@ -39,6 +41,9 @@ public class PlayerInfoHud implements CustomComponent {
     @Getter
     private int manaCount;
     
+    /**
+     * Component root pane getter
+     */
     @Override
     public Pane toPane() {
         hudWarpper = new AnchorPane();
@@ -54,6 +59,10 @@ public class PlayerInfoHud implements CustomComponent {
         return hudWarpper;
     }
 
+    /**
+     * Generates the base hud
+     * @return Base HUD component
+     */
     private GridPane createHud() {
         GridPane hud = new GridPane();
         hud.getStyleClass().add("hud");
@@ -69,6 +78,10 @@ public class PlayerInfoHud implements CustomComponent {
         return hud;
     }
 
+    /**
+     * Generates the minimap
+     * @return The minimap component
+     */
     private StackPane generateMinimap() {
         StackPane map = new StackPane();
         map.setAlignment(Pos.TOP_LEFT);
@@ -87,12 +100,18 @@ public class PlayerInfoHud implements CustomComponent {
         return map;
     }
 
+    /**
+     * Generates player name field
+     */
     private Text generatePlayerName() {
         Text playerName = new Text(HacknslashApplication.getInstance().getUser().getName());
         playerName.getStyleClass().add("player-name");
         return playerName;
     }
     
+    /**
+     * Append HP bar
+     */
     private StackPane generateHPBar() {
         StackPane hpWrapper = new StackPane();
         hpWrapper.setAlignment(Pos.BOTTOM_RIGHT);
@@ -109,6 +128,9 @@ public class PlayerInfoHud implements CustomComponent {
         return hpWrapper;
     }
     
+    /**
+     * Append mana bar
+     */
     private StackPane generateManaBar() {
         StackPane manaWrapper = new StackPane();
         manaWrapper.setAlignment(Pos.BOTTOM_RIGHT);
@@ -125,6 +147,9 @@ public class PlayerInfoHud implements CustomComponent {
         return manaWrapper;
     }
 
+    /**
+     * Append exp bar
+     */
     private StackPane generateExpBar() {
         StackPane expWrapper = new StackPane();
         expWrapper.setAlignment(Pos.BOTTOM_RIGHT);
@@ -142,6 +167,10 @@ public class PlayerInfoHud implements CustomComponent {
         return expWrapper;
     }
     
+    /**
+     * Render the map canvas based on the background of the current loaded map
+     * @param background
+     */
     public void renderMapCanvas(MapLayerInfo background) {
         GraphicsContext gc = mapCanvas.getGraphicsContext2D();
         gc.setFill(new Color(1, 1, 1, 1));
@@ -161,13 +190,21 @@ public class PlayerInfoHud implements CustomComponent {
         playersGc.fillOval(64, 64, 4, 4);
     }
     
+    /**
+     * Move the minimap
+     * @param x X component of the user's coordinate
+     * @param y Y component of the user's coordinate
+     */
     public void updateMapCanvas(double x, double y) {
         mapCanvas.setTranslateX((-x * scale) + 64 + (scale/2));
         mapCanvas.setTranslateY((-y * scale) + 64 + (scale/2));
     }
 
+    /**
+     * Update HP, mana, exp values
+     * @param o The byte[] received from the server
+     */
     public void update(byte[] o) {
-        Log.info("Update: " + new String(o));
         SelfInfoUpdatePacket packet;
         try {
             packet = HacknslashApplication.JSON_MAPPER.readValue(o, SelfInfoUpdatePacket.class);

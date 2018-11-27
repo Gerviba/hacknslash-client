@@ -19,6 +19,10 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.text.Text;
 
+/**
+ * Chat GUI component
+ * @author Gergely Szabó
+ */
 public class ChatHud implements CustomComponent {
 
     private AnchorPane chatWrapper;
@@ -32,6 +36,10 @@ public class ChatHud implements CustomComponent {
             newText(), newText(), newText(), newText(), newText()
     };
 
+    /**
+     * Appends a new text line.
+     * @return A new {@link Text} object with 'text' CSS class 
+     */
     private Text newText() {
         Text text = new Text();
         text.getStyleClass().add("text");
@@ -39,6 +47,10 @@ public class ChatHud implements CustomComponent {
         return text;
     }
     
+    /**
+     * New message received handler
+     * @param o A byte[] received from STOMP channel
+     */
     public void appendMessage(byte[] o) {
         for (int i = 0; i < 9; ++i) {
             texts[i].setText(texts[i + 1].getText());
@@ -54,6 +66,9 @@ public class ChatHud implements CustomComponent {
         }
     }
     
+    /**
+     * Sends the message from the input text field if presents.
+     */
     private void sendChatMessage() {
         HacknslashApplication.getInstance().getConnection().appendTask(stomp -> {
             try {
@@ -75,6 +90,9 @@ public class ChatHud implements CustomComponent {
         });
     }
     
+    /**
+     * Getter to the root pane of the component
+     */
     @Override
     public Pane toPane() {
         chatWrapper = new AnchorPane();
@@ -122,6 +140,10 @@ public class ChatHud implements CustomComponent {
         return chatWrapper;
     }
 
+    /**
+     * Activates the chat component. 
+     * The user will able to write message to the input text field.
+     */
     public void allow() {
         chatInput.setDisable(false);
         sendMessage.setDisable(false);

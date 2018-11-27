@@ -8,6 +8,10 @@ import javafx.scene.paint.Color;
 import lombok.Data;
 import lombok.Setter;
 
+/**
+ * Mob model
+ * @author Gergely Szabó
+ */
 @Data
 public class MobModel implements RenderableModel {
 
@@ -76,11 +80,17 @@ public class MobModel implements RenderableModel {
         this.texture = ImageUtil.loadImage("/assets/mobs/" + texture + ".png", 2);
     }
     
+    /**
+     * Entity id of this component
+     */
     @Override
     public long getId() {
         return entityId;
     }
     
+    /**
+     * Render method of this model
+     */
     @Override
     public void draw(GraphicsContext midGc, GraphicsContext topGc, double time, double dX, double dY) {
         if (hp <= 0)
@@ -91,6 +101,13 @@ public class MobModel implements RenderableModel {
         renderHPBar(topGc, dX, dY);
     }
 
+    /**
+     * Render the model with the action direction
+     * @param gc GraphicContext of the canvas
+     * @param time Current time in millis
+     * @param dX X coordinate
+     * @param dY Y coordinate
+     */
     private void renderModel(GraphicsContext gc, double time, double dX, double dY) {
         int state = (int) (((long) (time * 6)) % 4);
         gc.drawImage(texture, 
@@ -102,6 +119,12 @@ public class MobModel implements RenderableModel {
                 scale, scale);
     }
     
+    /**
+     * Render the name of the mob, above the model
+     * @param gc GraphicContext of the canvas
+     * @param dX X coordinate
+     * @param dY Y coordinate
+     */
     private void renderName(GraphicsContext gc, double dX, double dY) {
         gc.setStroke(BLACK_COLOR);
         gc.setFill(NAME_COLOR);
@@ -113,6 +136,12 @@ public class MobModel implements RenderableModel {
                 this.y - dY  + (canvasHeight / 2) - 12 - scale);
     }
 
+    /**
+     * Render the HP bar, above the model
+     * @param gc GraphicContext of the canvas
+     * @param dX X coordinate
+     * @param dY Y coordinate
+     */
     private void renderHPBar(GraphicsContext gc, double dX, double dY) {
         gc.setFill(TRANSPARENT_BLACK_COLOR);
         gc.fillRect(
@@ -127,6 +156,10 @@ public class MobModel implements RenderableModel {
                 scale * 0.75 * hp, 4);
     }
     
+    /**
+     * Update mob status
+     * @param ms MobStatus received from the telemetry packet
+     */
     public void update(TelemetryPacket.MobStatus ms) {
         this.targetX = (long) ms.getTargetX();
         if (Math.abs(this.targetX - this.x) > 10)
@@ -150,6 +183,9 @@ public class MobModel implements RenderableModel {
         this.hp = ms.getHp();
     }
 
+    /**
+     * Do the logic of the movement
+     */
     @Override
     public void calc() {
         if (this.x != this.targetX || this.y != this.targetY) {
@@ -161,32 +197,39 @@ public class MobModel implements RenderableModel {
         }
     }
     
+    /**
+     * Rendering order getter
+     */
     @Override
     public double getOrder() {
         return y - scale - 2;
     }
 
+    /**
+     * Finished getter. Always return false. 
+     * This method used in the custom entity garbage collector.
+     */
     @Override
     public boolean isFinished() {
         return false;
     }
     
+    /**
+     * X coordinate setter
+     * @param x X coordinate
+     */
     public void setX(double x) {
         this.x = x;
         this.targetX = x;
     }
     
+    /**
+     * Y coordinate setter
+     * @param y Y coordinate
+     */
     public void setY(double y) {
         this.y = y;
         this.targetY = y;
-    }
-    
-    public double getGeneralX() {
-        return this.x / scale;
-    }
-
-    public double getGeneralY() {
-        return this.y / scale;
     }
     
 }

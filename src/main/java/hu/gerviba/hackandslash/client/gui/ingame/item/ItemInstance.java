@@ -3,6 +3,10 @@ package hu.gerviba.hackandslash.client.gui.ingame.item;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+/**
+ * An instance of an item
+ * @author Gergely Szabó
+ */
 @Data
 @AllArgsConstructor
 public class ItemInstance {

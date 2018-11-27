@@ -3,6 +3,10 @@ package hu.gerviba.hackandslash.client.gui.ingame.particle;
 import hu.gerviba.hackandslash.client.ImageUtil;
 import javafx.scene.image.Image;
 
+/**
+ * Particle storage class
+ * @author Gergely Szabó
+ */
 public class Particles {
 
     public static final Particle WATER;
@@ -18,6 +22,9 @@ public class Particles {
     public static final Particle HEALTHS;
     public static final Particle MANA;
     
+    /**
+     * Initialize contained particle instances
+     */
     static {
         Image texture = ImageUtil.loadImage("/assets/particles/magic.png");
         

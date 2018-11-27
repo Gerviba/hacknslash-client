@@ -3,6 +3,10 @@ package hu.gerviba.hackandslash.client.packets;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * Self info update packet
+ * @author Gergely Szabó
+ */
 @Data
 @NoArgsConstructor
 public class SelfInfoUpdatePacket {

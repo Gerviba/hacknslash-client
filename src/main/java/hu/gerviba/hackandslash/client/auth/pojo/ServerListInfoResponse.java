@@ -1,34 +1,20 @@
 package hu.gerviba.hackandslash.client.auth.pojo;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 
-@NoArgsConstructor
+/**
+ * Pojo to store server list response data
+ * @author Gergely Szabó
+ */
+@Data
 @AllArgsConstructor
-@ToString
 public class ServerListInfoResponse {
 
-    @Getter
-    @Setter
     private String name;
-    
-    @Getter
-    @Setter
     private String motd;
-    
-    @Getter
-    @Setter
     private int users;
-    
-    @Getter
-    @Setter
     private int maxUsers;
-    
-    @Getter
-    @Setter
     private String icon;
     
 }

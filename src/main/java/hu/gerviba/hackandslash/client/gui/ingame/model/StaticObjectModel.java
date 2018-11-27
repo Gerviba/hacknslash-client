@@ -4,6 +4,10 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import lombok.Data;
 
+/**
+ * Static object model (such as: chest)
+ * @author Gergely Szabó
+ */
 @Data
 public class StaticObjectModel implements RenderableModel {
 
@@ -16,10 +20,16 @@ public class StaticObjectModel implements RenderableModel {
     private final int canvasWidth;
     private final int canvasHeight;
     
+    /**
+     * Do the logic of the movement
+     */
     @Override
     public void calc() {
     }
-
+    
+    /**
+     * Render method of this model
+     */
     @Override
     public void draw(GraphicsContext midGc, GraphicsContext topGc, double time, double x, double y) {
         midGc.drawImage(image, 
@@ -30,11 +40,18 @@ public class StaticObjectModel implements RenderableModel {
                 renderWidth, renderHeight);
     }
 
+    /**
+     * Rendering order getter
+     */
     @Override
     public double getOrder() {
         return dY - renderHeight;
     }
 
+    /**
+     * Finished getter. Always return false. 
+     * This method used in the custom entity garbage collector.
+     */
     @Override
     public boolean isFinished() {
         return false;

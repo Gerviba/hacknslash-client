@@ -24,6 +24,11 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Server entry component.
+ * This component will download the select server's information.
+ * @author Gergely Szabó
+ */
 @Slf4j
 public class ServerEntryComponent implements CustomComponent {
 
@@ -37,10 +42,18 @@ public class ServerEntryComponent implements CustomComponent {
     private Text serverUsage;
     private volatile ServerListInfoResponse response;
     
+    /**
+     * Constructor
+     * @param ip IP address of the server
+     */
     public ServerEntryComponent(String ip) {
         this.ip = HacknslashApplication.respolveHost(ip);
     }
 
+    /**
+     * Get the root element of this component.
+     * This component will download the select server's information.
+     */
     @Override
     public Pane toPane() {
         server = new GridPane();

@@ -7,10 +7,20 @@ import hu.gerviba.hackandslash.client.gui.ingame.model.PlayerModel;
 import hu.gerviba.hackandslash.client.gui.ingame.particle.ParticleInstance;
 import hu.gerviba.hackandslash.client.gui.ingame.particle.Particles;
 
+/**
+ * Clouds and lightnings
+ * @author Gergely Szabó
+ */
 public class ThunderSkill extends Skill {
 
     private final double[] X_COORDS, Y_COORDS;
-
+    
+    /**
+     * Skill constructor
+     * @param skillUid Unique ID of the skill
+     * @param manaCost Mana cost of casing the skill
+     * @param reloadTime Time to reload
+     */
     public ThunderSkill(int skillUid, int manaCost, double reloadTime) {
         super(skillUid, manaCost, reloadTime);
         
@@ -43,6 +53,9 @@ public class ThunderSkill extends Skill {
         
     }
     
+    /**
+     * Cast the skill, register particle effects
+     */
     @Override
     public void cast(double x, double y, int direction, IngameWindow ingame) {
         double xShift = direction == PlayerModel.DIRECTION_LEFT ? -1.5

@@ -47,6 +47,10 @@ import javafx.scene.text.TextAlignment;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * The core ingame GUI window
+ * @author Gergely Szabó
+ */
 @Slf4j
 public class IngameWindow extends CustomWindow {
     
@@ -95,6 +99,9 @@ public class IngameWindow extends CustomWindow {
     
     Set<String> input = new HashSet<>();
 
+    /**
+     * Load the default components and initialize the variables
+     */
     @Override
     protected void init() {
         initVars();
@@ -143,6 +150,9 @@ public class IngameWindow extends CustomWindow {
         HacknslashApplication.getInstance().getConnection().startTelemetry();
     }
 
+    /**
+     * Close handler to stop animation timer and remove unused entities.
+     */
     @Override
     public void onClose() {
         if (animationTimer != null)
@@ -151,6 +161,10 @@ public class IngameWindow extends CustomWindow {
             entityGrabageCollector.cancel(false);
     }
     
+    /**
+     * Add particles for testing
+     */
+    @Deprecated
     private void addParticles() {
         entities.add(new PermanentParticleInstance(Particles.WATER, System.currentTimeMillis(), 
                 3.5, 5.5, scaleInPixel, width, height, 0));
@@ -166,6 +180,9 @@ public class IngameWindow extends CustomWindow {
                 8.5, 5.5, scaleInPixel, width, height, 0));
     }
     
+    /**
+     * Starts the animation loop
+     */
     private void startAnimationLoop() {
         GraphicsContext layerMiddle = canvasMiddle.getGraphicsContext2D();
         playerModel.put(PLAYER_ENTITY_ID, 
@@ -208,12 +225,19 @@ public class IngameWindow extends CustomWindow {
         animationTimer.start();
     }
 
+    /**
+     * Starts the entity garbage collector.
+     * Remove eg. finished particle animations.
+     */
     private void startEntityGrabageCollector() {
         entityGrabageCollector = HacknslashApplication.ASYNC.scheduleAtFixedRate(
                 () -> Platform.runLater(() -> entities.removeIf(x -> x.isFinished())), 
                 5, 10, TimeUnit.SECONDS); 
     }
     
+    /**
+     * Initialize variables
+     */
     private void initVars() {
         height = 800;
         width = 1280;
@@ -223,6 +247,9 @@ public class IngameWindow extends CustomWindow {
         entities = Collections.synchronizedList(new LinkedList<>());
     }
 
+    /**
+     * Creates the ingame body component
+     */
     private AnchorPane initBody() {
         AnchorPane body = new AnchorPane();
         body.setMinWidth(width);
@@ -230,6 +257,11 @@ public class IngameWindow extends CustomWindow {
         return body;
     }
 
+    /**
+     * Creates the ingame component
+     * @param body The parent of this component
+     * @return
+     */
     private StackPane initIngame(AnchorPane body) {
         StackPane ingame = new StackPane();
         ingame.setMinWidth(width);
@@ -242,6 +274,10 @@ public class IngameWindow extends CustomWindow {
         return ingame;
     }
 
+    /**
+     * Initialize the render layers
+     * @param ingame Ingame component
+     */
     private void initLayers(StackPane ingame) {
         canvasBackground = new Canvas(width, height);
         ingame.getChildren().add(canvasBackground);
@@ -258,6 +294,10 @@ public class IngameWindow extends CustomWindow {
         playerNames.getGraphicsContext2D().setFont(new Font("Roboto Mono Bold", 12));
     }
 
+    /**
+     * Handle keyboard input
+     * @param me The player model of the local client user
+     */
     private void applyInput(PlayerModel me) {
         double dX = me.getX();
         double dY = me.getY();
@@ -331,6 +371,12 @@ public class IngameWindow extends CustomWindow {
         me.setWalking(walking);
     }
 
+    /**
+     * Function to determine if a player can move to a specific coordinate or not.
+     * @param dX X coordinate (actual coordinates)
+     * @param dY Y coordinate (actual coordinates)
+     * @return true, if the movement is allowed
+     */
     public boolean canMoveTo(double dX, double dY) {
         return walkable != null && walkable.stream().filter(c -> 
             c[0] == (int) ((dX + 14) / scaleInPixel) && 
@@ -340,14 +386,11 @@ public class IngameWindow extends CustomWindow {
             c[1] == (int) ((dY - 6) / scaleInPixel)
         ).findAny().isPresent();
     }
-
-    public boolean canMoveToVirtualCoords(double dX, double dY) {
-        return true;
-//        return walkable != null && walkable.stream().filter(c -> 
-//            c[0] == (int) (dX) && c[1] == (int) (dY)
-//        ).findAny().isPresent();
-    }
     
+    /**
+     * Initialize the JavaFX {@link Scene} of this window.
+     * @param body The body component
+     */
     private void initScene(Pane body) {
         scene = new Scene(body);
         scene.getStylesheets().add(getClass().getResource("/assets/css/style.css").toExternalForm());
@@ -356,10 +399,18 @@ public class IngameWindow extends CustomWindow {
         stage.setMinWidth(width);
     }
 
+    /**
+     * Getter for the local client representation.
+     * @return
+     */
     public PlayerModel getMe() {
         return playerModel.get(PLAYER_ENTITY_ID);
     }
 
+    /**
+     * Loads the specified map.
+     * @param o The byte[] received from the server
+     */
     public void loadMap(byte[] o) {
         try {
             MapLoadPacket packet = mapper.readValue(o, MapLoadPacket.class);
@@ -400,6 +451,11 @@ public class IngameWindow extends CustomWindow {
         }
     }
     
+    /**
+     * Creates a flatten list of the coordinates passed
+     * @param parts List of background parts
+     * @return The flatten list
+     */
     private List<int[]> flatMapOf(List<BackgroundPart> parts) {
         LinkedList<int[]> result = new LinkedList<>();
         for (BackgroundPart bg : parts)
@@ -407,6 +463,11 @@ public class IngameWindow extends CustomWindow {
         return result;
     }
 
+    /**
+     * Updates player and mob coordinates. 
+     * Also removes the killed or disconnected ones.
+     * @param o The byte[] received form the server
+     */
     public void updateTelemetry(byte[] o) {
         TelemetryPacket telemetry;
         try {
@@ -441,7 +502,6 @@ public class IngameWindow extends CustomWindow {
                         mob.setX(mob.getX());
                         mob.setY(mob.getY());
                         entities.add(mob);
-                        System.out.println("Added " + ms.getEntityId() + " " + mob.getX() + " " + mob.getY() + " " + mob.getTexture());
                     }
                 }
                 for (long eid : telemetry.getEntityRemove()) {
@@ -452,6 +512,14 @@ public class IngameWindow extends CustomWindow {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+    
+    @Deprecated
+    public boolean canMoveToVirtualCoords(double dX, double dY) {
+        return true;
+//        return walkable != null && walkable.stream().filter(c -> 
+//            c[0] == (int) (dX) && c[1] == (int) (dY)
+//        ).findAny().isPresent();
     }
     
 }

@@ -1,26 +1,18 @@
 package hu.gerviba.hackandslash.client.auth.pojo;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 
-@NoArgsConstructor
+/**
+ * Pojo to store register request data
+ * @author Gergely Szabó
+ */
+@Data
 @AllArgsConstructor
-@ToString
 public class RegisterRequest {
 
-    @Getter
-    @Setter
     private String username;
-
-    @Getter
-    @Setter
     private String email;
-    
-    @Getter
-    @Setter
     private String password;
     
 }

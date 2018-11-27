@@ -6,6 +6,10 @@ import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
 
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * STOMP Session listener 
+ * @author Gergely Szabó
+ */
 @Slf4j
 public class SessionHandler extends StompSessionHandlerAdapter {
 
