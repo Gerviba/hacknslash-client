@@ -3,7 +3,6 @@ package hu.gerviba.hackandslash.client.packets;
 import java.util.List;
 
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
 public class TelemetryPacket {
@@ -26,18 +25,17 @@ public class TelemetryPacket {
     }
     
     @Data
-    public class MobStatus {
+    public static class MobStatus {
         private long entityId;
         private String name;
+        private String texture;
         private double targetX;
         private double targetY;
-        private int hp;
+        private float hp;
     }
 
     private List<PlayerModelStatus> players;
-    
     private List<Long> entityRemove;
-    
     private List<MobStatus> mobs;
 
 }

@@ -7,7 +7,9 @@ import hu.gerviba.hackandslash.client.gui.ingame.particle.Particles;
 
 public class WaterBeamSkill extends Skill {
 
-    public WaterBeamSkill(int skillUid, double manaCost, double reloadTime) {
+    final double z = 0.5;
+    
+    public WaterBeamSkill(int skillUid, int manaCost, double reloadTime) {
         super(skillUid, manaCost, reloadTime);
     }
 
@@ -19,7 +21,11 @@ public class WaterBeamSkill extends Skill {
         double yMultipiler = direction == PlayerModel.DIRECTION_STAND ? 1
                 : direction == PlayerModel.DIRECTION_BACK ? -1 : 0;
         
-        for (int i = 1; i < 7; ++i)
+        for (int i = 1; i < 7; ++i) {
+            if (!ingame.canMoveToVirtualCoords(
+                    x + ((0.5 * i) * xMultipiler), 
+                    y + ((0.5 * i) * yMultipiler)))
+                break;
             ingame.getEntities().add(new ParticleInstance(Particles.WATER, 
                     System.currentTimeMillis() - 120 + (120 * i), 
                     x + ((0.5 * i) * xMultipiler), 
@@ -27,7 +33,8 @@ public class WaterBeamSkill extends Skill {
                     ingame.getScaleInPixel(), 
                     ingame.getWidth(), 
                     ingame.getHeight(),
-                    0.5));
+                    z));
+        }
     }
 
     

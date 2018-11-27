@@ -11,7 +11,7 @@ public class ThunderSkill extends Skill {
 
     private final double[] X_COORDS, Y_COORDS;
 
-    public ThunderSkill(int skillUid, double manaCost, double reloadTime) {
+    public ThunderSkill(int skillUid, int manaCost, double reloadTime) {
         super(skillUid, manaCost, reloadTime);
         
         X_COORDS = new double[] {

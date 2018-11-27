@@ -7,7 +7,9 @@ import hu.gerviba.hackandslash.client.gui.ingame.particle.Particles;
 
 public class PurpleMagicSkill extends Skill {
 
-    public PurpleMagicSkill(int skillUid, double manaCost, double reloadTime) {
+    final double z = 0.5;
+
+    public PurpleMagicSkill(int skillUid, int manaCost, double reloadTime) {
         super(skillUid, manaCost, reloadTime);
     }
 
@@ -19,7 +21,11 @@ public class PurpleMagicSkill extends Skill {
         double yMultipiler = direction == PlayerModel.DIRECTION_STAND ? 1
                 : direction == PlayerModel.DIRECTION_BACK ? -1 : 0;
         
-        for (int i = 1; i < 14; ++i)
+        for (int i = 1; i < 14; ++i) {
+            if (!ingame.canMoveToVirtualCoords(
+                    x + ((0.25 * i) * xMultipiler), 
+                    y + ((0.25 * i) * yMultipiler) - z))
+                break;
             ingame.getEntities().add(new ParticleInstance(i % 2 == 0 ? Particles.MAGIC1 : Particles.MAGIC2, 
                     System.currentTimeMillis() - 80 + (80 * i), 
                     x + ((0.25 * i) * xMultipiler), 
@@ -27,7 +33,8 @@ public class PurpleMagicSkill extends Skill {
                     ingame.getScaleInPixel(), 
                     ingame.getWidth(), 
                     ingame.getHeight(),
-                    0.5));
+                    z));
+        }
     }
 
     

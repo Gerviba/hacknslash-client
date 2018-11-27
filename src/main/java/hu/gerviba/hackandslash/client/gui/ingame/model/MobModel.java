@@ -1,6 +1,6 @@
 package hu.gerviba.hackandslash.client.gui.ingame.model;
 
-import hu.gerviba.hackandslash.client.gui.ingame.item.Items;
+import hu.gerviba.hackandslash.client.ImageUtil;
 import hu.gerviba.hackandslash.client.packets.TelemetryPacket;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
@@ -46,7 +46,7 @@ public class MobModel implements RenderableModel {
     
     private static final Color BLACK_COLOR = new Color(0, 0, 0, 1);
     private static final Color TRANSPARENT_BLACK_COLOR = new Color(0, 0, 0, 0.5);
-    private static final Color WHITE_COLOR = new Color(1, 1, 1, 1);
+    private static final Color NAME_COLOR = new Color(162.0/255, 162.0/255, 162.0/255, 1);
     private static final Color RED_COLOR = new Color(1, 0, 0, 1);
     
     private final long entityId;
@@ -73,7 +73,7 @@ public class MobModel implements RenderableModel {
         this.canvasWidth = width;
         this.canvasHeight = height;
         this.name = name;
-        this.texture = Items.getImageByComponents(texture, "null", "null", "null", "null");
+        this.texture = ImageUtil.loadImage("/assets/mobs/" + texture + ".png", 2);
     }
     
     @Override
@@ -83,6 +83,9 @@ public class MobModel implements RenderableModel {
     
     @Override
     public void draw(GraphicsContext midGc, GraphicsContext topGc, double time, double dX, double dY) {
+        if (hp <= 0)
+            return;
+        
         renderModel(midGc, time, dX, dY);
         renderName(topGc, dX, dY);
         renderHPBar(topGc, dX, dY);
@@ -101,7 +104,7 @@ public class MobModel implements RenderableModel {
     
     private void renderName(GraphicsContext gc, double dX, double dY) {
         gc.setStroke(BLACK_COLOR);
-        gc.setFill(WHITE_COLOR);
+        gc.setFill(NAME_COLOR);
         gc.strokeText(name, 
                 this.x - dX  + (canvasWidth / 2) + (scale / 2) - (scale / 2), 
                 this.y - dY  + (canvasHeight / 2) - 12 - scale);

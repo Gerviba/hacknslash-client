@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
@@ -19,6 +20,7 @@ import hu.gerviba.hackandslash.client.ImageUtil;
 import hu.gerviba.hackandslash.client.gui.CustomWindow;
 import hu.gerviba.hackandslash.client.gui.ingame.item.Items;
 import hu.gerviba.hackandslash.client.gui.ingame.model.MiddleModel;
+import hu.gerviba.hackandslash.client.gui.ingame.model.MobModel;
 import hu.gerviba.hackandslash.client.gui.ingame.model.PermanentParticleInstance;
 import hu.gerviba.hackandslash.client.gui.ingame.model.PlayerModel;
 import hu.gerviba.hackandslash.client.gui.ingame.model.RenderableModel;
@@ -28,6 +30,7 @@ import hu.gerviba.hackandslash.client.gui.ingame.particle.Particles;
 import hu.gerviba.hackandslash.client.packets.MapLoadPacket;
 import hu.gerviba.hackandslash.client.packets.MapLoadPacket.MapLayerInfo.BackgroundPart;
 import hu.gerviba.hackandslash.client.packets.TelemetryPacket;
+import hu.gerviba.hackandslash.client.packets.TelemetryPacket.MobStatus;
 import hu.gerviba.hackandslash.client.packets.TelemetryPacket.PlayerModelStatus;
 import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
@@ -328,8 +331,8 @@ public class IngameWindow extends CustomWindow {
         me.setWalking(walking);
     }
 
-    private boolean canMoveTo(double dX, double dY) {
-        return walkable.stream().filter(c -> 
+    public boolean canMoveTo(double dX, double dY) {
+        return walkable != null && walkable.stream().filter(c -> 
             c[0] == (int) ((dX + 14) / scaleInPixel) && 
             c[1] == (int) ((dY - 6) / scaleInPixel)
         ).findAny().isPresent() && walkable.stream().filter(c -> 
@@ -338,6 +341,13 @@ public class IngameWindow extends CustomWindow {
         ).findAny().isPresent();
     }
 
+    public boolean canMoveToVirtualCoords(double dX, double dY) {
+        return true;
+//        return walkable != null && walkable.stream().filter(c -> 
+//            c[0] == (int) (dX) && c[1] == (int) (dY)
+//        ).findAny().isPresent();
+    }
+    
     private void initScene(Pane body) {
         scene = new Scene(body);
         scene.getStylesheets().add(getClass().getResource("/assets/css/style.css").toExternalForm());
@@ -416,6 +426,22 @@ public class IngameWindow extends CustomWindow {
                         player.setY(pms.getY());
                         playerModel.put(pms.getEntityId(), player);
                         entities.add(player);
+                    }
+                }
+                for (MobStatus ms : telemetry.getMobs()) {
+                    Optional<RenderableModel> mobEntity = entities.stream()
+                            .filter(e -> e.getId() == ms.getEntityId())
+                            .findFirst();
+                    if (mobEntity.isPresent()) {
+                        ((MobModel)mobEntity.get()).update(ms);
+                    } else {
+                        MobModel mob = new MobModel(ms.getEntityId(), ms.getName(), scale, 
+                                ms.getTexture(), width, height);
+                        mob.update(ms);
+                        mob.setX(mob.getX());
+                        mob.setY(mob.getY());
+                        entities.add(mob);
+                        System.out.println("Added " + ms.getEntityId() + " " + mob.getX() + " " + mob.getY() + " " + mob.getTexture());
                     }
                 }
                 for (long eid : telemetry.getEntityRemove()) {

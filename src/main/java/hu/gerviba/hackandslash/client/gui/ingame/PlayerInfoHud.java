@@ -20,6 +20,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
+import lombok.Getter;
 
 public class PlayerInfoHud implements CustomComponent {
 
@@ -35,6 +36,8 @@ public class PlayerInfoHud implements CustomComponent {
     private Text manaText;
     private ProgressBar exp;
     private Text expText;
+    @Getter
+    private int manaCount;
     
     @Override
     public Pane toPane() {
@@ -172,6 +175,7 @@ public class PlayerInfoHud implements CustomComponent {
             hpText.setText(packet.getHp() + "/" + packet.getMaxHp() + " ");
             mana.setProgress(((float) packet.getMana()) / packet.getMaxMana()); 
             manaText.setText(packet.getMana() + "/" + packet.getMaxMana() + " ");
+            manaCount = packet.getMana();
             exp.setProgress(((float) packet.getExp()) / packet.getMaxExp()); 
             expText.setText(packet.getExp() + "/" + packet.getMaxExp() + " ");
         } catch (IOException e) {

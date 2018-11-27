@@ -10,7 +10,7 @@ public class PoisonedAreaSkill extends Skill {
 
     private final double[] X_COORDS, Y_COORDS;
 
-    public PoisonedAreaSkill(int skillUid, double manaCost, double reloadTime) {
+    public PoisonedAreaSkill(int skillUid, int manaCost, double reloadTime) {
         super(skillUid, manaCost, reloadTime);
         
         X_COORDS = new double[] {
@@ -42,7 +42,9 @@ public class PoisonedAreaSkill extends Skill {
     
     @Override
     public void cast(double x, double y, int direction, IngameWindow ingame) {
-        for (int i = 0; i < X_COORDS.length; ++i)
+        for (int i = 0; i < X_COORDS.length; ++i) {
+            if (!ingame.canMoveToVirtualCoords(x + X_COORDS[i], y + Y_COORDS[i]))
+                continue;
             ingame.getEntities().add(new ParticleInstance(Particles.LONG_POISON,
                     System.currentTimeMillis() + 1000 + (ThreadLocalRandom.current().nextInt(20) * 10),
                     x + X_COORDS[i],
@@ -51,6 +53,7 @@ public class PoisonedAreaSkill extends Skill {
                     ingame.getWidth(),
                     ingame.getHeight(),
                     0));
+        }
     }
 
 }

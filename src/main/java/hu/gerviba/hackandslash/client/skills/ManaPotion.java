@@ -8,7 +8,7 @@ import hu.gerviba.hackandslash.client.gui.ingame.particle.Particles;
 
 public class ManaPotion extends Skill {
 
-    public ManaPotion(int skillUid, double manaCost, double reloadTime) {
+    public ManaPotion(int skillUid, int manaCost, double reloadTime) {
         super(skillUid, manaCost, reloadTime);
     }
 

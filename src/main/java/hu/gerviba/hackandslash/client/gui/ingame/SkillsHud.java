@@ -98,11 +98,11 @@ public class SkillsHud implements CustomComponent {
             skills.add(label, i, 1);
         }
         
-        this.skills.put(1, new PoisonedAreaSkill(1, 0, 4000));
-        this.skills.put(2, new WaterBeamSkill(2, 0, 1500));
-        this.skills.put(3, new PurpleMagicSkill(3, 0, 2000));
-        this.skills.put(4, new FlameCircleSkill(4, 0, 3000));
-        this.skills.put(5, new ThunderSkill(5, 0, 3000));
+        this.skills.put(1, new PoisonedAreaSkill(1, 30, 4000));
+        this.skills.put(2, new WaterBeamSkill(2, 8, 1500));
+        this.skills.put(3, new PurpleMagicSkill(3, 12, 2000));
+        this.skills.put(4, new FlameCircleSkill(4, 33, 3000));
+        this.skills.put(5, new ThunderSkill(5, 25, 3000));
         this.skills.put(101, new HealthPotion(101, 0, 1000));
         this.skills.put(102, new HealthPotion(102, 0, 2500));
         this.skills.put(103, new HealthPotion(103, 0, 10000));
@@ -131,7 +131,7 @@ public class SkillsHud implements CustomComponent {
         int skillUid = itemsInMenu[slotUsed].getSkillUid();
         if (skillUid < 1)
             return;
-        if (skills.containsKey(skillUid) && skills.get(skillUid).canCast()) {
+        if (skills.containsKey(skillUid) && skills.get(skillUid).canCast(ingame.getPlayerInfoComponent())) {
             skills.get(skillUid).send();
             reloadTimer(itemBackgrounds[slotUsed], skills.get(skillUid));
         }
